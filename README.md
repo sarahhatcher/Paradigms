@@ -1,0 +1,2 @@
+# Paradigms
+Group Assignments
