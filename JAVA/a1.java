@@ -86,37 +86,37 @@ class a1{
     }
 
     // display the array for error checking. Do not use in final assignment
-  public void print(){
+    public void print(){
       for(int i = 0;i<8;i++){
         System.out.println(Arrays.toString(this.penArray[i]));
       }
     }
-  /* Standard test case for some partial assignments and diag forbidden mach
-  */
-  public void testBasic(){
-    for(int i=1;i<9;i++){
-    this.applyForbidden(i,i);
+    /* Standard test case for some partial assignments and diag forbidden mach
+    */
+    public void testBasic(){
+      for(int i=1;i<9;i++){
+        this.applyForbidden(i,i);
+      }
+      this.applyPartial(2,3);
+      this.applyPartial(5,7);
     }
-    this.applyPartial(2,3);
-    this.applyPartial(5,7);
-  }
 
-  /* tests the table by assigning forbidden states
-  */
-  public void testDiagFM(){
+    /* tests the table by assigning forbidden states
+    */
+    public void testDiagFM(){
       for(int i=1;i<9;i++){
       this.applyForbidden(i,i);
-    }
-  }
-  /* should force apply partial to return a flag
-  *  for "No valid solution possible!"
-  *  FLAG NOT IMPLEMENTED YET
-  */
-  public void testFM_PA(){
-    for(int i=1;i<9;i++){
-    this.applyForbidden(i,i);
       }
-    this.applyPartial(1,1);
+    }
+    /* should force apply partial to return a flag
+    *  for "No valid solution possible!"
+    *  FLAG NOT IMPLEMENTED YET
+    */
+    public void testFM_PA(){
+      for(int i=1;i<9;i++){
+        this.applyForbidden(i,i);
+      }
+      this.applyPartial(1,1);
     }
     /* should apply a program exiting Partial Assignment error
     *  partial assignment error test same task same mach input
@@ -141,7 +141,5 @@ class a1{
       this.applyPartial(2,5);
     }
   }
-
-
 
 }
