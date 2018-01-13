@@ -1,0 +1,14 @@
+Seeing as how there is a link to a section of text in the assignment page, am I
+  right to assume that it will be material that can make it's way onto the test?
+
+For all these hard constraints, if in their description occurs either a
+  machine that is not in {1,2,3,4,5,6,7,8} or a task that is not in
+  {A,B,C,D,E,F,G,H}, then the system should terminate with the message
+  "invalid machine/task".
+
+  Does this mean that the solution for the assignment output in this order?
+  "invalid machine/task" > "Error while parsing input file" >
+  "partial assignment error" > "No valid solution possible!" > "Solution"
+
+  I suppose its possible that we could throw an error for invalid machine/task
+    before hitting an error while parsing input file
