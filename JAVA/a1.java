@@ -5,27 +5,12 @@ class a1{
     //create a penality array with hard constraints forbidden mach. ,
     //and forced assignment
 
-
     table table1 = new table();
-    for(int i=1;i<9;i++)
-    {
-      table1.applyForbiden(i,i);
-    }
-    /* should check for all other errors before throwing a
-    "no valid solution problem"
-    //table1.applyPartial(1,1);
-    */
-    table1.applyPartial(1,2);
-
-    /* partial assignment error test same input
-    table1.applyPartial(1,2);   //should output "partial assignment error"
-    */
-    /* partial assignment error test same mach diffirent ask input
-    table1.applyPartial(1,3);
-    */
-    /* partial assignment error test diffirent mach same task input
-    table1.applyPartial(2,2);   //should output "partial assignment error"
-    */
+    table1.testDiagFM();
+    //table1.testFM_PA();
+    //table1.testDupPA();
+    //table1.testSameMach();
+    //table1.testSameTask();
     table1.print();
 
     //create a tree
@@ -68,9 +53,9 @@ class a1{
       }
     }
 
-    //method for applying forbiden machine as -1 on the array
+    //method for applying forbidden machine as -1 on the array
 
-    public void applyForbiden(int m, int t){
+    public void applyForbidden(int m, int t){
       this.penArray[m-1][t-1] = -1;
     }
 
@@ -100,11 +85,53 @@ class a1{
     }
 
     // display the array for error checking. Do not use in final assignment
-    public void print(){
+  public void print(){
       for(int i = 0;i<8;i++){
         System.out.println(Arrays.toString(this.penArray[i]));
       }
     }
+
+  /* tests the table by assigning forbidden states
+  */
+  public void testDiagFM(){
+      for(int i=1;i<9;i++){
+      this.applyForbidden(i,i);
+    }
   }
+  /* should force apply partial to return a flag
+  *  for "No valid solution possible!"
+  *  FLAG NOT IMPLEMENTED YET
+  */
+  public void testFM_PA(){
+    for(int i=1;i<9;i++){
+    this.applyForbidden(i,i);
+      }
+    this.applyPartial(1,1);
+    }
+    /* should apply a program exiting Partial Assignment error
+    *  partial assignment error test same task same mach input
+    */
+    public void testDupPA(){
+      this.applyPartial(1,1);
+      this.applyPartial(1,1);
+    }
+    /* should apply a program exiting Partial Assignment error
+    *  partial assignment error test same mach diffirent task input
+    */
+    public void testSameMach(){
+      this.applyPartial(1,1);
+      this.applyPartial(1,2);
+    }
+
+    /* should apply a program exiting Partial Assignment error
+    *  partial assignment error test diffirent mach same task input
+    */
+    public void testSameTask(){
+      this.applyPartial(1,5);
+      this.applyPartial(2,5);
+    }
+  }
+
+
 
 }
