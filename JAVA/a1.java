@@ -6,7 +6,8 @@ class a1{
     //and forced assignment
 
     table table1 = new table();
-    table1.testDiagFM();
+    table1.testBasic();
+    //table1.testDiagFM();
     //table1.testFM_PA();
     //table1.testDupPA();
     //table1.testSameMach();
@@ -90,6 +91,15 @@ class a1{
         System.out.println(Arrays.toString(this.penArray[i]));
       }
     }
+  /* Standard test case for some partial assignments and diag forbidden mach
+  */
+  public void testBasic(){
+    for(int i=1;i<9;i++){
+    this.applyForbidden(i,i);
+    }
+    this.applyPartial(2,3);
+    this.applyPartial(5,7);
+  }
 
   /* tests the table by assigning forbidden states
   */
