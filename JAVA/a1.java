@@ -7,6 +7,10 @@ class a1{
 
 
     table table1 = new table();
+    for(int i=1;i<9;i++)
+    {
+      table1.applyForbiden(i,i);
+    }
     table1.print();
 
     //create a tree
@@ -39,14 +43,21 @@ class a1{
 * does not deal with "machine penalty error".
 */
   public static class table{
-
-    int[][] penArray = new int[8][8];
-
+    public int[][] penArray = new int[8][8];
+    // constructor for testing only. Should find a way to actualy use input
     public table(){
       for(int i = 0; i < 8;i++){
         Arrays.fill(penArray[i], 1);
       }
     }
+
+    //method for applying forbiden machine
+
+    public void applyForbiden(int m, int t){
+      this.penArray[m-1][t-1] = -1;
+    }
+
+    // display the array for error checking. Do not use in final assignment
     public void print(){
       for(int i = 0;i<8;i++){
         System.out.println(Arrays.toString(this.penArray[i]));
