@@ -11,6 +11,21 @@ class a1{
     {
       table1.applyForbiden(i,i);
     }
+    /* should check for all other errors before throwing a
+    "no valid solution problem"
+    //table1.applyPartial(1,1);
+    */
+    table1.applyPartial(1,2);
+
+    /* partial assignment error test same input
+    table1.applyPartial(1,2);   //should output "partial assignment error"
+    */
+    /* partial assignment error test same mach diffirent ask input
+    table1.applyPartial(1,3);
+    */
+    /* partial assignment error test diffirent mach same task input
+    table1.applyPartial(2,2);   //should output "partial assignment error"
+    */
     table1.print();
 
     //create a tree
@@ -38,9 +53,11 @@ class a1{
 
 
 /*
-* table with penalties. Contains error checking for forced partial assignment.
+* table with penalties.
+* Can handel "partial assignment error" errors.
+*
 * Does not deal with "invalid machine/task" errors.
-* does not deal with "machine penalty error".
+* Does not deal with "machine penalty error" errors.
 */
   public static class table{
     public int[][] penArray = new int[8][8];
@@ -51,10 +68,35 @@ class a1{
       }
     }
 
-    //method for applying forbiden machine
+    //method for applying forbiden machine as -1 on the array
 
     public void applyForbiden(int m, int t){
       this.penArray[m-1][t-1] = -1;
+    }
+
+    //method for forced partial assignement.
+    //turns forced partial assignments into -2.
+    public void applyPartial(int m, int t){
+      //
+      if (this.penArray[m-1][t-1] == -1){
+        //flag "no valid solution upon hard constrain error checking"
+      }else if(this.penArray[m-1][t-1] <0){
+        System.out.println("partial assignment error");
+        System.exit(0);
+      } else {
+        /* need to work out the logic for this. Currently new
+        */
+        this.penArray[m-1][t-1] = -2;
+        for(int i = 0; i<8;i++){
+          if(i!=m-1){
+            this.penArray[i][t-1] = -3;
+          }
+          if(i!=t-1){
+            this.penArray[m-1][i] = -3;
+          }
+
+        }
+      }
     }
 
     // display the array for error checking. Do not use in final assignment
