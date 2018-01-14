@@ -15,3 +15,9 @@ For all these hard constraints, if in their description occurs either a
 
 Do the correct solutions for the assignment have quotation marks on the output
   or should we output the text in the quotations only, without the marks?
+
+Should the "No valid solution possible!\n" have the newline? will that change
+  the ability of the test programs to check the answer?
+
+For the invalid Hard constraints, is invalid "invalid machine/task" ? or is an
+ attempt at assigning tasks incorrectly here "No valid solution possible"?
