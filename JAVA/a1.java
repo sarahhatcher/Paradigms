@@ -1,4 +1,4 @@
-import java.util.Arrays;
+import java.util.*;
 class a1{
 
   public static void main(String[] args){
@@ -16,6 +16,7 @@ class a1{
       System.out.print("No valid solution possible!\n");
       System.exit(0);
     }
+    //solMatrix(table1.penArray)
     table1.print(); System.out.print("\n"); //two lines on one for ease of test
 
     //create a data structure that can handel TNT and TNP, indexed by task
@@ -31,12 +32,59 @@ class a1{
   }
 
   public class solMatrix{
-    public solMatrix(){
-      for(int m = 0; m<8;m++){
-        for(int t = 0; t<8; t++){
+    //when noSolution if flaged, end with "No valid solution possible!"
+    public int noSolution = 0;
+    //boundPen to be found by the first itteration of the depth first search
+    public int boundPen;
+    //current is the array of moves it took the get the lowest current Pen
+    public int[] current = new int[8];
+    //temp is the array of moves for the current itteration of the search
+    //it will also act as part of the itterator, as a stack where you pop
+    //the latest element to close the unusable branch. Becomes new current if
+    //tempBoundPen < boundPen on the 8th machine
+    public int[] temp = new int[8];
+    //temp pen to compare to bound pen
+    public int tempBoundPen;
+    //task sort is to find the next task
+    public int[] taskSort = new int[8];
 
+    /*constructor that will solve the problem
+    * will attempt to throw "No valid solution possible!" whenever it makes a
+    * change that may cause the error
+    */
+    public int[] solMatrix(int[][][] master){
+      //for every starting (root) task, start a seach of possible outcomes
+      for(int root = 0; root<8; root++)
+        if(master[0][0][0] <0){
+          continue;
         }
-      }
+        if(master[0][0][2]==1){
+          //TNT handeler
+        }
+        if(master[0][0][3]==1){
+          //TNP handeler
+        }
+        tempBoundPen = master [0][0][0];
+
+        for(int m = 1; m<8; m++){
+          for(int t = 1; t<8; t++){
+            if(this.noSolution == 1){
+              System.out.print("No valid solution possible!\n");
+              System.exit(0);
+            }
+            if(master[m][t][0] <0){
+              continue;
+            }
+            if(master[m][t][2]==1){
+              //TNT handeler
+            }
+            if(master[m][t][3]==1){
+              //TNP handeler
+            }
+
+          } //end of t for loop
+        }//end of m for loop
+      return current;
     }
   }
 
@@ -92,9 +140,11 @@ class a1{
         for(int i = 0; i<8;i++){
           if(i!=m-1){
             this.penArray[i][t-1][1] = 1;
+            this.penArray[i][t-1][0] = -1;
           }
           if(i!=t-1){
             this.penArray[m-1][i][1] = 1;
+            this.penArray[m-1][i][0] = -1;
           }
 
         }
