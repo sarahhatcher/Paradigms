@@ -12,73 +12,89 @@ class a1{
     //table1.testDupPA();
     //table1.testSameMach();
     //table1.testSameTask();
-    table1.print();
-
-    //create a tree
-    //preform a depth first search
-    //itterate through the tree until fully explored
-    //return the assignment with the lowest pen.
-  }
-
-  //the nodes of the binary tree
-  public class node {
-    public node children[];
-    public int mach;
-    public int task;
-    public int flag;
-    public int pen;
-
-    public void node(int m,int t,int f,int p){
-      this.mach = m;
-      this.task = t;
-      this.flag = f;
-      this.pen = p;
+    if(table1.noSolution == 1){
+      System.out.print("No valid solution possible!\n");
+      System.exit(0);
     }
+    table1.print(); System.out.print("\n"); //two lines on one for ease of test
 
+    //create a data structure that can handel TNT and TNP, indexed by task
+    //preform a depth first search, create bound after getting 8th penalty
+    //return no solution if none is found
+    //create an array of 8 tasks with current solution
+    //create an array of 8 tasks with current itteration
+    //procede down each of the eight tasks in machine one while keeping a 8x8
+    //   matrix as the state function to avoid doing the loop more then once
+    //if the alg reaches machine eight and with lower pen, make it current
+    //itterate through the 8 starting tasks until fully explored
+    //return the current solution and it's penalty
   }
 
+  public class solMatrix{
+    public solMatrix(){
+      for(int m = 0; m<8;m++){
+        for(int t = 0; t<8; t++){
 
-/*
-* table with penalties.
-* Can handel "partial assignment error" errors.
-*
-* Does not deal with "invalid machine/task" errors.
-* Does not deal with "machine penalty error" errors.
-*/
+        }
+      }
+    }
+  }
+
+  /*
+  * table with penalties.
+  * Can handel "partial assignment error" errors.
+  *
+  * Does not deal with "invalid machine/task" errors.
+  * Does not deal with "machine penalty error" errors.
+  */
   public static class table{
-    public int[][] penArray = new int[8][8];
+    public int[][][] penArray = new int[8][8][4];
+    /* arrays contain [m][t][p,PA flag, TNT flag, TNP flag]
+    *  p = penality
+    *  PA = Forced Partial Assignemnt (it will flag the entire row and column)
+    *  TNT = too near task flag. Check an outside array for the destination
+    *        and set its flag to -1 for that search instance only
+    *  TNP = too near penality flag. Check an outside array for the destination
+    *        and set its penality to current + TNP for that search instant only
+    *  could also add a TNP penality as a fifth flag
+    *  And for the love of god, do not confuse TNT and TNP
+    */
+    public int noSolution = 0;
     // constructor for testing only. Should find a way to actualy use input
     public table(){
-      for(int i = 0; i < 8;i++){
-        Arrays.fill(penArray[i], 1);
+      for(int m = 0; m < 8;m++){
+        for(int t=0; t<8; t++){
+          penArray[m][t][0]= 1;
+        }
       }
     }
 
     //method for applying forbidden machine as -1 on the array
 
     public void applyForbidden(int m, int t){
-      this.penArray[m-1][t-1] = -1;
+      this.penArray[m-1][t-1][0] = -1;
     }
 
     //method for forced partial assignement.
     //turns forced partial assignments into -2.
     public void applyPartial(int m, int t){
       //
-      if (this.penArray[m-1][t-1] == -1){
-        //flag "no valid solution upon hard constrain error checking"
-      }else if(this.penArray[m-1][t-1] <0){
+      if (this.penArray[m-1][t-1][0] == -1){
+        this.noSolution = 1; //flags no solution for later
+      }else if(this.penArray[m-1][t-1][1] >0){
+        //if this mach or task has a partial assignment anywhere on it throw.
         System.out.println("partial assignment error");
         System.exit(0);
       } else {
-        /* need to work out the logic for this. Currently new
+        /* need to work out the logic for this.
         */
-        this.penArray[m-1][t-1] = -2;
+        this.penArray[m-1][t-1][1] = 2;
         for(int i = 0; i<8;i++){
           if(i!=m-1){
-            this.penArray[i][t-1] = -3;
+            this.penArray[i][t-1][1] = 1;
           }
           if(i!=t-1){
-            this.penArray[m-1][i] = -3;
+            this.penArray[m-1][i][1] = 1;
           }
 
         }
@@ -87,8 +103,11 @@ class a1{
 
     // display the array for error checking. Do not use in final assignment
     public void print(){
-      for(int i = 0;i<8;i++){
-        System.out.println(Arrays.toString(this.penArray[i]));
+      for(int m = 0;m<8;m++){
+        System.out.print("\n");
+        for(int t = 0; t<8;t++){
+          System.out.print(Arrays.toString(this.penArray[m][t]));
+        }
       }
     }
     /* Standard test case for some partial assignments and diag forbidden mach

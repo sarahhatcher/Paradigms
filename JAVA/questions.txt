@@ -12,3 +12,6 @@ For all these hard constraints, if in their description occurs either a
 
   I suppose its possible that we could throw an error for invalid machine/task
     before hitting an error while parsing input file
+
+Do the correct solutions for the assignment have quotation marks on the output
+  or should we output the text in the quotations only, without the marks?
