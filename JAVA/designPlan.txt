@@ -1,0 +1,174 @@
+
+
+Step by Step basis.
+
+- Any negative integer will be used for invalid value.
+- In ASCII code, alphabet A to H corresponds to integer 65 to 72.
+- 'n' indicates looping from nMIN to nMAX.
+
+// Initialize following variables.
+- tempPenalty: int32<8>
+- tempSet: int32<8>
+    # stores current operation of tasks assigned with machines. Default is NOOPS
+
+- isForced: bool
+- forcedVal: int32
+    # Stores forced penalties occured due to FPA.
+- forcedSet: int32<8>
+    # Stores forced pairs occured due to FPA. default is NOOPS.
+
+- bestTake: int32
+    # Penalty value of best path combination of found so far. default is NOOPS.
+- outputSet: int32<8>
+    # stores best set of machine-task pairs, to output.
+- opsUsed: int32
+    # Debug variable, counts amount of operation performed.
+
+- nMIN = 0
+- nMAX = 7
+- ASCII2INT = -65
+- NOOPS = -1
+
+function failConclude():
+    // print("No valid solution possible!")
+    // halt()
+
+function tempFlush():
+    // clear each entry stores in the Temp Set.
+
+// Verify too-near penalty somewhere.
+
+1. Establish 8x8 Matrix using array, initialized using data from "Machine Penalty".
+    ## x-axis; entries in row represents task.
+    ## y-axis; entries in column represents machine.
+    1.1 :: Verify if row length of the input is correct. (target = 8)
+    1.2 :: Verify if column length of the input is correct. (target = 8)
+    1.3 :: If less than 64 entry initializes, or any initializes with negative penalty, print "Machine Penalty Error" and halt.
+    Assign -> scheduleMap: int32<8,8>
+
+2. Process through the list of Forced Partial Assignment.
+    2.1 :: Go through each entry of FPA through following procedure. For every pair of (task = x, mach = y);
+        // add scheduleMap[x][y] to forcedVal
+        if // tempSet[y] < 0: push x -> tempSet[y].
+        else // print("Partial Assignment Error") and halt().
+        // assign NOOPS -> scheduleMap[x][n]
+        // assign NOOPS -> scheduleMap[n][y]
+        // assign tempSet -> forcedSet
+
+3. Process through the list of Forbidden Machine.
+    3.1 :: Go through FM entries (task = x, mach = y);
+        // assign NOOPS -> scheduleMap[x][y]
+        if // forcedSet[y] > 0
+            // then failConclude().
+
+# Rewrite this section, not fail proof.
+4. Establish upper bound through quick greedy tree search.
+    4.1 :: Machine 'M' looks for cheapest valid task open.
+        // Search for valid minimum of scheduleMap[n][M];
+            ## If there is no valid (> NOOPS) task found, check if forcedSet[M] is assigned.
+            ## If forcedSet[M] is NOOPS, jump to last step.
+        // tempPenalty = Above + tempPenalty
+        // tempSet = tempSet + (n, M)
+        // If task is in the "too-near tasks" as task1; a part of the pair, NOOPS -> tempMapper[task2][M+1] or NOOPS -> activeMap[task2][M-7] (If and only if M = 7)
+        // If task is in the "too-near penalty" as task1; a part of the pair, activeMap[task2][M+1] = activeMap[task2][M+1] + near_penalty.
+        // Repeat this procedure 7 times to assign all eight machine with the task;
+        if // succeeds: tempPenalty -> upperBound.
+        elif // fails: Restart from (n,M) that above check failed.
+
+4. Bounded by Best Result Search on all possible path. (Loop approach)
+    ## let 'iTask' and 'jMachine' be loop variable.
+    ## let 'pathWay' temporarily store previous path. It is a stack, and goes through the data in Depth-first basis.
+    4.1 :: Find all valid iTask available for current jMachine.
+            ## Check top object on pathWay to calculate too-near tasks and too-near penalties
+                ## If there is top object on pathWay,
+                // copy pathWay[top] -> prevTask, prevMachine
+                // push scheduleMap[prevTask][prevMachine] + sum(tempPenalty) -> tempPenalty[jMachine]
+                if // tempPenalty[jMachine] >= bestTake: pathWay.pop() and repeat 4.1
+            ## If there is no valid (> NOOPS) task found, check if forcedSet[jMachine] is mapped.
+                // (forcedSet[jMachine], jMachine) -> pathWay
+                // set isForced -> True
+            ## If forcedSet[jMachine] is NOOPS, branch.
+                if # pathWay is empty: failConclude()
+                if # pathWay is not empty: pull top object from pathWay (pathWay.pop())
+                    // add -1 -> jMachine
+                    # Then repeat 4.1
+            // push all (iTask, jMachine) in backward order (H->A) -> pathWay
+            if // jMachine == 8: push scheduleMap[iTask][jMachine] + sum(tempPenalty) -> tempPenalty[jMachine]
+                if // sum(tempPenalty) < bestTake; or bestTake == NOOPS: assign sum(tempPenalty) -> bestTake
+                // tempPenalty.pop(); pathWay.pop()
+
+
+-- Testing Suite for the proposed program.
+    ## Program will generate textfile that can be used as input for proposed program.
+    ## Program will take parameters in which to be tested, including forcing various errors and imposing extreme cases.
+        8x8 = machine 0~16 / task 0~16 / default (8x8)
+        FPA = Amount 0~20 / Invalid (for amount less than 8, compared to FM and TNT)
+        FM = percentile 0~90
+        TNT = Pairs 0~20
+        MP = Randomized 0~99
+        TNP = Pairs 0~20 / Invalid
+
+Implement Random.
+
+1. Generate Machine Penalties 
+    1.1 :: Initialize iTask by jMachine matrix based on criteria written in [8x8].
+    1.2 :: Use [MP] to generate random value for Machine Penalty.
+        // assign random.integer(0,MP) -> matrix[n][n]
+
+2. Generate Forbidden Machine
+    2.1 :: Go through O(x*y) for loop if FM is not None.
+        if // FM > random.integer(0,FM): push (x,y) -> forbidList
+    2.2 :: Check validity of forbidList (If solution exist), if it is no valid solution, add comment.
+
+3. Generate Too-Near Task
+    3.1 :: Generate.
+        ## Where x is equal to 8 if it is valid, more than 8 if it is invalid.
+        for (0,TNT) // push (random.int(1,x), random.int(1,x)) -> tooNearBan
+
+4. Generate Forced Partial Assignment:
+    ## Initialize variable 'tempCheck' and reasonably sized array 'tempForbid' initialized with data in forbidList
+    4.1 :: Generate FPA.
+        for (0,FPA) // assign (random.int(1,x), random.int(1,x)) -> tempCheck
+            if // (tempCheck in tempForbid) and (FPA == invalid): push tempCheck -> fpaList
+            elif // (tempCheck[0] in tooNearBan<task1>): push tempCheck -> fpaList
+                if // tempCheck[1] < 8: push (tempCheck[1]+1, tooNearBan<task2>) -> tempForbid
+            elif // (tempCheck not in tempForbid): push tempCheck -> fpaList
+            else // add -1 -> FPA, re-run the loop.
+
+5. Generate Too-Near Penalty
+    5.1 :: Generate.
+        ## Where x is equal to 8 if it is valid, more than 8 if it is invalid.
+        for (0,TNP) // push (random.int(1,x), random.int(1,x)) -> tooNearPenalty
+
+6. Write into file, I/O into testCase.txt; or something.
+
+forced partial assignment:
+(*mach1*,*task1*)
+...
+(*machn*,*taskn*)
+
+forbidden machine:
+(*mach'1*,*task'1*)
+...
+(*mach'm*,*task'm*)
+ 
+too-near tasks:
+(*task"11*,*task"12*)
+...
+(*task"k1*,*task"k2*)
+
+machine penalties:
+*p11* *p12* *p13* *p14* *p15* *p16* *p17* *p18*
+*p21* *p22* *p23* *p24* *p25* *p26* *p27* *p28*
+*p31* *p32* *p33* *p34* *p35* *p36* *p37* *p38*
+*p41* *p42* *p43* *p44* *p45* *p46* *p47* *p48*
+*p51* *p52* *p53* *p54* *p55* *p56* *p57* *p58*
+*p61* *p62* *p63* *p64* *p65* *p66* *p67* *p68*
+*p71* *p72* *p73* *p74* *p75* *p76* *p77* *p78*
+*p81* *p82* *p83* *p84* *p85* *p86* *p87* *p88*
+
+too-near penalities
+(*task+11*,*task+12*,*p1*)
+
+...
+(*task+x1*,*task+x2*,*px*)
