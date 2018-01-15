@@ -31,6 +31,19 @@ class a1{
     //return the current solution and it's penalty
   }
 
+  /*Tree to contain the state of the alg
+  */
+  public class tree<T>{
+    public node<T> root;
+
+    public tree(){
+      root = new node<T>();
+      root.children = new
+    }
+
+  }
+
+
   public class solMatrix{
     //when noSolution if flaged, end with "No valid solution possible!"
     public int noSolution = 0;

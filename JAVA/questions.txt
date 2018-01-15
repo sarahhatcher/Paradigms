@@ -4,20 +4,20 @@ Seeing as how there is a link to a section of text in the assignment page, am I
 For all these hard constraints, if in their description occurs either a
   machine that is not in {1,2,3,4,5,6,7,8} or a task that is not in
   {A,B,C,D,E,F,G,H}, then the system should terminate with the message
-  "invalid machine/task".
+  "invalid machine/task". For hard constraint forced partial assignments
+  should it also have this "invalid machine/task" error? or is an
+  attempt at assigning tasks incorrectly here a "No valid solution possible"
+  error?
 
   Does this mean that the solution for the assignment output in this order?
   "invalid machine/task" > "Error while parsing input file" >
   "partial assignment error" > "No valid solution possible!" > "Solution"
 
   I suppose its possible that we could throw an error for invalid machine/task
-    before hitting an error while parsing input file
+    before hitting an error while parsing input file?
 
 Do the correct solutions for the assignment have quotation marks on the output
   or should we output the text in the quotations only, without the marks?
 
 Should the "No valid solution possible!\n" have the newline? will that change
   the ability of the test programs to check the answer?
-
-For the invalid Hard constraints, is invalid "invalid machine/task" ? or is an
- attempt at assigning tasks incorrectly here "No valid solution possible"?
