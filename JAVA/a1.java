@@ -52,40 +52,6 @@ class a1{
     * will attempt to throw "No valid solution possible!" whenever it makes a
     * change that may cause the error
     */
-    public int[] solMatrix(int[][][] master){
-      //for every starting (root) task, start a seach of possible outcomes
-      for(int root = 0; root<8; root++)
-        if(master[0][0][0] <0){
-          continue;
-        }
-        if(master[0][0][2]==1){
-          //TNT handeler
-        }
-        if(master[0][0][3]==1){
-          //TNP handeler
-        }
-        tempBoundPen = master [0][0][0];
-
-        for(int m = 1; m<8; m++){
-          for(int t = 1; t<8; t++){
-            if(this.noSolution == 1){
-              System.out.print("No valid solution possible!\n");
-              System.exit(0);
-            }
-            if(master[m][t][0] <0){
-              continue;
-            }
-            if(master[m][t][2]==1){
-              //TNT handeler
-            }
-            if(master[m][t][3]==1){
-              //TNP handeler
-            }
-
-          } //end of t for loop
-        }//end of m for loop
-      return current;
-    }
   }
 
   /*
