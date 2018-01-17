@@ -1,3 +1,116 @@
+designPlan 0.2v;
+
+FPA = Forced Partial Assignment
+FM = Forbidden Machine
+TNT = Too-Near Task
+MP = Machine Penalty
+TNP = Too-Near Penalty
+
+------------------------------------Parser Object
+Desired Output:
+    operationGrid -> 8x8 Matrix object containing combined result of FPA, FM and MP.
+    taskGrid -> 8x8 Matrix object containing combined result of TNT and TNP.
+    fpaPenalty -> Integer variable containing combined penalty from FPA assignment.
+
+Error Handling:
+    fpa -> Partial Assignment Error.
+    mpCrash -> Machine Penalty Error.
+    collision -> FM/FPA collision, No valid solution Error.
+    nullM -> Invalid Machine Error.
+    nullT -> Invalid Task Error.
+    nullP -> Invalid Penalty Error.
+    unknown -> unknown;
+
+Constants:
+    INPUTNAME = "problem1.txt"
+    ASCII_INT_CHAR_FIX = -48
+    ASCII_CAP_CHAR_FIX = -65
+    FORBIDDEN = -1
+    ASSIGNED = -2
+    SIZEMAX = 8
+    PLACEHOLDER = 0
+    BRACKET = 40
+    ASCII_INT = {47,58}
+    ASCII_LOWER = {96,123}
+
+tracking variables:
+    lineCounter = 0
+
+1. Process FPA into operationGrid.
+    1.1 :: Verify input.
+    1.2 :: Check if the target location [iTask][jMach] is mapped to FORBIDDEN
+            // If it is, parseError(fpa). Terminate.
+        // Assign FORBIDDEN -> [n][jMach]
+        // Assign FORBIDDEN -> [iTask][n]
+    1.3 :: Set it as Assigned for later processing.
+        // Assign ASSIGNED -> [iTask][jMach]
+
+2. Process FM into operationGrid.
+    2.1 :: Verify input.
+    2.2 :: Check if the target location [iTask][jMach] is mapped to ASSIGNED
+            // If it is, parseError(collision). Terminate.
+        // Assign FORBIDDEN -> [iTask][jMach]
+
+3. Process TNT into taskGrid
+    3.1 :: Verify input.
+    3.2 :: Map directly.
+        // Assign FORBIDDEN -> [iTask][jTask]
+    
+4. Process MP into operationGrid.
+    4.1 :: Verify input and process it through lineProcessor() into integer[8] array.
+            if // operationGrid[n][lineCounter] is ASSIGNED: penalty[n] -> fpaPenalty; and grid is mapped to 0.
+            if // operationGrid[n][lineCounter] is PLACEHOLDER: grid is mapped to penalty[n].
+    4.2 :: increment lineCounter by one, and repeat above process.
+
+5. Process TNP into taskGrid
+    5.1 :: Verify input.
+    5.2 :: Map directly, if TNT is not set.
+
+Remainder: Verify if lineCounter is at 8. if it is not, trigger parseError(mpCrash)
+    -- Output using printMe() function.
+
+
+------------------------------------Logic Object
+Desired Output:
+
+
+
+------------------------------------Testcase Generator
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////TEXTBELOW 0.1v
 
 
 Step by Step basis.
@@ -36,7 +149,14 @@ function failConclude():
 function tempFlush():
     // clear each entry stores in the Temp Set.
 
-// Verify too-near penalty somewhere.
+1. Parse the given Input Text:
+    ## parse and assign FPA -> 
+
+    // MP -> FM -> FPA into 8x8 Machine*Task Matrix
+    // TNT + TNP into 8x8 Task*Task Matrix, TNT = -1, TNP > 0;
+    // Combined FPA values. 
+
+
 
 1. Establish 8x8 Matrix using array, initialized using data from "Machine Penalty".
     ## x-axis; entries in row represents task.
