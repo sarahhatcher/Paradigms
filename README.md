@@ -6,3 +6,4 @@ Victor Nguyen, Oz_otR, 10131322
 Christopher Smith, smithcg1, 10140988
 Sarah Hatcher, sarahhatcher, 10135542
 Richard Pham, richking14, 10111559
+Jonathan Choi, kagerow, 30011696
