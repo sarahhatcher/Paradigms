@@ -117,8 +117,8 @@ public class SplashParser {
             }
 
             // Handler for collision caused no-solution matrix is moved outside of actual parsing process.
-            if (setCollision = true) {
-                parseError("Collision");
+            if (setCollision == true) {
+                parseError("collision");
             }
 
         } catch (FileNotFoundException e) {
@@ -139,12 +139,13 @@ public class SplashParser {
         System.out.println("Initiating Debug Output.");
 
         for (byte i=0; i < 2; i++) {
-            for (byte j=0; i < SIZEMAX; i++) {
-                for (byte k=0; j < SIZEMAX; j++) {
+            for (byte j=0; j < SIZEMAX; j++) {
+                for (byte k=0; k < SIZEMAX; k++) {
                     System.out.print("[" + masterGrid[j][k][i] + "]");
                 }
                 System.out.println("");
             }
+            System.out.println("");
         }
     }
 
@@ -364,6 +365,9 @@ public class SplashParser {
         }
         if (setTNP == true) {
             System.out.println("Set TNP: true");
+        }
+        if (setCollision == true) {
+            System.out.println("Set Collision: true");
         }
         System.out.println("Cycle: " + execCycle);
         printMe();
