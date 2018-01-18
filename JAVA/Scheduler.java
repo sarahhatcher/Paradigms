@@ -23,17 +23,24 @@
 	Revision History:
 		Information on non-functioning version will be excluded.
 		
-		v0.1: 
+        v0.1: Completed early implementation of SplashParser
+        v0.2: SplashParser now can handle all ASCII cases except for the bracket.
+        v0.3: SplashParser now correctly handles penalty error, debug function 'systemStatePrinter' added. Private.
+        v0.4: SplashParser updated, detail on on SplashParser
 */
 
 public class Scheduler
 {
 	// 
-    public static void main (String [] args)
+    public static void main (String[] args)
     {
-        SplashParser aParser = new SplashParser ();
+        if (args.length < 2) {
+            System.out.println("Please initiate program in following syntax.");
+            System.out.println("java Scheduler (inputName) (outputName)");
+            System.exit(0);
+        }
+        SplashParser aParser = new SplashParser(args[0]);
         
-        aParser.printMe("Something");
-        aParser.printMe("task");
+        aParser.systemStatePrinter();
     }
 }
