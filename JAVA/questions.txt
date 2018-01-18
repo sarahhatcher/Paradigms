@@ -27,7 +27,8 @@ Do the correct solutions for the assignment have quotation marks on the output
   ANS: Without quotation marks.
 
 Should the "No valid solution possible!\n" have the newline? will that change
-  the ability of the test programs to check the answer? INVALID
+  the ability of the test programs to check the answer? invalid? I dunno. How
+  does output work???!?
 
 For the parser error are you expecting us to handle extra spaces between letters
   and between words?
