@@ -122,7 +122,7 @@ public class SplashParser {
             }
 
         } catch (FileNotFoundException e) {
-            System.out.println("No file named " + INPUTNAME + " found, aborting.");
+            System.out.println("No file named " + inputName + " found, aborting.");
             e.printStackTrace();
         } catch (IOException e) {
             parseError("0");
@@ -130,7 +130,7 @@ public class SplashParser {
     }
 
     // Returns Operation/Task matrix as requested.
-    public int[][] fetchMatrix() {
+    public int[][][] fetchMatrix() {
         return masterGrid;
     }
 
