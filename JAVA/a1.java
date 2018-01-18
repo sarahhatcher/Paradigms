@@ -5,19 +5,20 @@ class a1{
     //create a penality array with hard constraints forbidden mach. ,
     //and forced assignment
 
-    table table1 = new table();
-    table1.testBasic();
-    //table1.testDiagFM();
-    //table1.testFM_PA();
-    //table1.testDupPA();
-    //table1.testSameMach();
-    //table1.testSameTask();
-    if(table1.noSolution == 1){
+    table tablePen = new table();  //table with forbidden and forced hard constraints
+    tablePen.testBasic();          //basic use of the array
+    table tableNear = new table(); //table with too near task/pen
+    //tableNear.testDiagFM();        //apply forbiden too same task pairs in the near list
+    //tablePen.testDiagFM();
+    //tablePen.testFM_PA();
+    //tablePen.testDupPA();
+    //tablePen.testSameMach();
+    //tablePen.testSameTask();
+    if(tablePen.noSolution == 1){
       System.out.print("No valid solution possible!\n");
       System.exit(0);
     }
-    //solMatrix(table1.penArray)
-    table1.print(); System.out.print("\n"); //two lines on one for ease of test
+    tablePen.print(); System.out.print("\n"); //two lines on one for ease of test
 
     //create a data structure that can handel TNT and TNP, indexed by task
     //preform a depth first search, create bound after getting 8th penalty
@@ -34,11 +35,8 @@ class a1{
   /*Tree to contain the state of the alg
   */
   public class tree<T>{
-    public node<T> root;
 
     public tree(){
-      root = new node<T>();
-      root.children = new
     }
 
   }
@@ -75,8 +73,9 @@ class a1{
   * Does not deal with "machine penalty error" errors.
   */
   public static class table{
-    public int[][][] penArray = new int[8][8][4];
-    /* arrays contain [m][t][p,PA flag, TNT flag, TNP flag]
+    public int[][] penArray = new int[8][8];
+    /* arrays contain [m][t]
+    *  the value at each entry is the pen or forbiden(-1)
     *  p = penality
     *  PA = Forced Partial Assignemnt (it will flag the entire row and column)
     *  TNT = too near task flag. Check an outside array for the destination
@@ -91,39 +90,32 @@ class a1{
     public table(){
       for(int m = 0; m < 8;m++){
         for(int t=0; t<8; t++){
-          penArray[m][t][0]= 1;
+          penArray[m][t]= 0;
         }
       }
     }
 
-    //method for applying forbidden machine as -1 on the array
 
+    //method for applying forbidden machine(or too near task) as -1 on the array
     public void applyForbidden(int m, int t){
-      this.penArray[m-1][t-1][0] = -1;
+      this.penArray[m-1][t-1] = -1;
     }
 
     //method for forced partial assignement.
-    //turns forced partial assignments into -2.
+    //must run all apply partial before running applyForbidden for error checking
     public void applyPartial(int m, int t){
       //
-      if (this.penArray[m-1][t-1][0] == -1){
-        this.noSolution = 1; //flags no solution for later
-      }else if(this.penArray[m-1][t-1][1] >0){
-        //if this mach or task has a partial assignment anywhere on it throw.
+      if (this.penArray[m-1][t-1] == -1){
         System.out.println("partial assignment error");
         System.exit(0);
       } else {
-        /* need to work out the logic for this.
+        /* need to work out the logic for this. will assign -1 too all
+        * row and columns for the partial assignment
         */
-        this.penArray[m-1][t-1][1] = 2;
         for(int i = 0; i<8;i++){
-          if(i!=m-1){
-            this.penArray[i][t-1][1] = 1;
-            this.penArray[i][t-1][0] = -1;
-          }
+          this.penArray[i][t-1] = -1;
           if(i!=t-1){
-            this.penArray[m-1][i][1] = 1;
-            this.penArray[m-1][i][0] = -1;
+            this.penArray[m-1][i] = -1;
           }
 
         }
@@ -134,9 +126,7 @@ class a1{
     public void print(){
       for(int m = 0;m<8;m++){
         System.out.print("\n");
-        for(int t = 0; t<8;t++){
-          System.out.print(Arrays.toString(this.penArray[m][t]));
-        }
+        System.out.print(Arrays.toString(this.penArray[m]));
       }
     }
     /* Standard test case for some partial assignments and diag forbidden mach
