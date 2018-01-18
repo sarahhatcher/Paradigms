@@ -39,3 +39,5 @@ For the parser error are you expecting us to handle extra spaces between letters
 
       what about no newline for some cases? INVALID
       extra newlines? INVALID
+
+"Too near penalty" has no ':' at the end like the rest. Is this intended?
