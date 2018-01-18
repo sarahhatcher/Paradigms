@@ -1,24 +1,30 @@
 import java.io.*;
 import java.util.*;
 
+// v0.4: Output matrix is now masterGrid[][][].
+//       Error handling has been altered: Collision will be no longer processed during parsing.
+//       FPA is no longer pre-calculated. It will be assigned normally. ASSIGN constant is kept for the purpose of detecting collision.
+// TODO: Error detection related to bracket is yet to be fixed.
+
 public class SplashParser {
 
     private BufferedReader br;
     private FileReader fr;
 
-    private int[][] operationGrid; // Logic Matrix, this will be where operation will be performed.
-    private int[][] taskGrid; // TNT-TNP data grid
+    private int[][][] masterGrid; // General Matrix, at third place, 0 is used for Logic Matrix, and 1 is used for Task Matrix.
     private int fpaPenalty; // Total cumulative penalty from forced partial assignment.
-
-    private boolean setName = false;
-    private boolean setFPA = false;
+    //Boolean for each step of parsing string 
+    //Set flag as we parse 
+    private boolean setName = false; //True when name is not in correct format -->name:: 
+    private boolean setFPA = false; //Check if structure remains--> no error 
     private boolean setFM = false;
     private boolean setTNT = false;
     private boolean setMP = false;
     private boolean setTNP = false;
-    private int execCycle = 0;
+    private boolean setCollision = false;
+    private int execCycle = 0; //Debugging variable.
+    private int lineCounter = 0; //lineCounter tracks the number of lines that have been parsed for machine penalty. If it isn't exactly 8 after MP is processed, throw error.
 
-    public static final String INPUTNAME = "problem1.txt";
     public static final byte ASCII_INT_CHAR_FIX = -48;
     public static final byte ASCII_CAP_CHAR_FIX = -65;
 
@@ -26,32 +32,38 @@ public class SplashParser {
     public static final byte SIZEMAX = 8;
     public static final byte ASSIGNED = -2;
     public static final byte PLACEHOLDER = 0;
-    public static final byte TASK = 0;
-    public static final byte MACH = 1;
+    public static final byte LOGIC = 0;
+    public static final byte TASK = 1;
 
     public static final byte BRACKET = 40;
     public static final byte[] ASCII_INT_RANGE = {47,58};
     public static final byte[] ASCII_UPPER_RANGE = {64,91};
     public static final byte[] ASCII_LOWER_RANGE = {96,123};
 
-    public SplashParser() {
+    public SplashParser(String inputName) {
         try {
             // Program will immediately try to find the input file and read them.
-            fr = new FileReader(INPUTNAME);
+	    //May need to update version to include exception handling for non-ascii input (check with prof if need to catch exception for input not in ascii --> outside of parser scope)
+	    
+	    //Create new fileReader with INPUTNAME
+	    ////Create new BufferedReader  
+            fr = new FileReader(inputName + ".txt");
             br = new BufferedReader(fr);
             
-            int lineCounter = 0;
+	    //tempStr is string being processed
             String tempStr = br.readLine();
+	    //Verify will try to pick up the first letter of given string in first while loop
             byte verify;
-
-            operationGrid = new int[SIZEMAX][SIZEMAX];
-            taskGrid = new int[SIZEMAX][SIZEMAX];
-            fpaPenalty = 0;
+	    //Current data structures before matching to Richards output
+	   
+	    // Master Marrix initiallization, two 8x8 matrix, 0 for logic 1 for task.
+            masterGrid = new int[SIZEMAX][SIZEMAX][2];
 
             while (tempStr != null) {
                 // Verifies if the line read is not the empty line.
                 tempStr = tempStr.trim();
-                
+		
+                //If the processed string is not empty then read the first character
                 if (!tempStr.contentEquals("")) {
                     verify = (byte) tempStr.charAt(0);
                 } else {
@@ -67,36 +79,31 @@ public class SplashParser {
                 else if ((verify > ASCII_INT_RANGE[0]) && (verify < ASCII_INT_RANGE[1])) // If the line starts with number
                 {
                     if (setMP == true) {
-                        // If a line starts with number, it is presumed that it is the line for Machine Penalty.
+                        // If a line starts with number it is presumed that it is the line for Machine Penalty.
                         int[] tempValue = lineProcessor(tempStr);
                         for (byte n = 0; n < SIZEMAX; n++)
                         {
-                            // If FPA is detected, process the FPA here, if not, simply assign MP.
-                            if (operationGrid[n][lineCounter] == ASSIGNED)
+                            // Assign values to all valid possible positions in matrix.
+                            if (masterGrid[n][lineCounter][LOGIC] != FORBIDDEN)
                             {
-                                fpaPenalty = fpaPenalty + tempValue[n];
-                                operationGrid[n][lineCounter] = 0;
-                            }
-                            else if (operationGrid[n][lineCounter] == PLACEHOLDER)
-                            {
-                                operationGrid[n][lineCounter] = tempValue[n];
+                                masterGrid[n][lineCounter][LOGIC] = tempValue[n];
                             }
                         }
                         // Line counter is used to check how many line of number has been proceed.
                         lineCounter = lineCounter + 1;
                     } else if (setName == true) {
-                        // Checks for integer starting name.
+                        // Checks for integer starting name.If name starts with number
                         setName = false;
                     } else {
                         parseError("intCrash");
                     }
                 }
-                else if (((verify > ASCII_LOWER_RANGE[0]) && (verify < ASCII_LOWER_RANGE[1])) || ((verify > ASCII_UPPER_RANGE[0]) && (verify < ASCII_UPPER_RANGE[1]))) // If the line starts with english letter
-                {
+		// If the line starts with english letter
+                else if (((verify > ASCII_LOWER_RANGE[0]) && (verify < ASCII_LOWER_RANGE[1])) || ((verify > ASCII_UPPER_RANGE[0]) && (verify < ASCII_UPPER_RANGE[1]))) {
                     flagProcessor(tempStr);
                 }
                 else if (verify != PLACEHOLDER) {
-                    // If no criteria is met, but has some ASCII characters, fault.
+                    // If no criteria is met, but has some ASCII characters, fault
                     if (setName == true) {
                         setName = false;
                     }
@@ -104,15 +111,14 @@ public class SplashParser {
                         parseError("inFault");
                     }
                 }
-
                 // readLine here, so EOL can be terminated correctly.
                 tempStr = br.readLine();
                 execCycle++;
             }
 
-            if (lineCounter != SIZEMAX) {
-                // Correct MP input is always 8 lines.
-                parseError("intCrash");
+            // Handler for collision caused no-solution matrix is moved outside of actual parsing process.
+            if (setCollision = true) {
+                parseError("Collision");
             }
 
         } catch (FileNotFoundException e) {
@@ -124,35 +130,21 @@ public class SplashParser {
     }
 
     // Returns Operation/Task matrix as requested.
-    public int[][] fetchMatrix(boolean request) {
-        if (request == true) {
-            return operationGrid;
-        } else {
-            return taskGrid;
-        }
-    }
-
-    // Returns precalculated Forced Assignment Penalty total. 
-    public int fetchFPATotal() {
-        return fpaPenalty;
+    public int[][] fetchMatrix() {
+        return masterGrid;
     }
 
     // For debug purpose, prints initialized state of operation or task matrix.
-    public void printMe(String context) {
-        System.out.println("Initiating Debug Output for " + context);
-        int[][] matrix;
+    public void printMe() {
+        System.out.println("Initiating Debug Output.");
 
-        if (context.contentEquals("task")) {
-            matrix = taskGrid;
-        } else {
-            matrix = operationGrid;
-        }
-
-        for (byte i=0; i < SIZEMAX; i++) {
-            for (byte j=0; j < SIZEMAX; j++) {
-                System.out.print("[" + matrix[i][j] + "]");
+        for (byte i=0; i < 2; i++) {
+            for (byte j=0; i < SIZEMAX; i++) {
+                for (byte k=0; j < SIZEMAX; j++) {
+                    System.out.print("[" + masterGrid[j][k][i] + "]");
+                }
+                System.out.println("");
             }
-            System.out.println("");
         }
     }
 
@@ -161,30 +153,30 @@ public class SplashParser {
         
         if (setTNP == true) {
             // If target location already forbidden, rewrite is not required.
-            if (taskGrid[newPairs[TASK]][newPairs[MACH]] != FORBIDDEN)  {
-                taskGrid[newPairs[TASK]][newPairs[MACH]] = newPairs[2];
+            if (masterGrid[newPairs[0]][newPairs[1]][TASK] != FORBIDDEN)  {
+                masterGrid[newPairs[0]][newPairs[1]][TASK] = newPairs[2];
             }
         }
         else if (setTNT == true) {
             // TNT shouldn't have any error during assignment.
-            taskGrid[newPairs[TASK]][newPairs[MACH]] = FORBIDDEN;
+            masterGrid[newPairs[0]][newPairs[1]][TASK] = FORBIDDEN;
         }
         else if (setFM == true) {
             // If FM is mapped to FPA, there will be no solution, which will be handled here.
-            if (operationGrid[newPairs[TASK]][newPairs[MACH]] != ASSIGNED)  {
-                operationGrid[newPairs[TASK]][newPairs[MACH]] = FORBIDDEN;
+            if (masterGrid[newPairs[0]][newPairs[1]][LOGIC] != ASSIGNED)  {
+                masterGrid[newPairs[0]][newPairs[1]][LOGIC] = FORBIDDEN;
             } else {
-                parseError("collision");
+                setCollision = true;
             }
         }
         else if (setFPA == true) {
             // Assigns FPA, also catches illegal FPA mapping.
-            if (operationGrid[newPairs[TASK]][newPairs[MACH]] != FORBIDDEN) {
+            if (masterGrid[newPairs[0]][newPairs[1]][LOGIC] != FORBIDDEN) {
                 for (byte n = 0; n < SIZEMAX; n++) {
-                    operationGrid[newPairs[TASK]][n] = FORBIDDEN;
-                    operationGrid[n][newPairs[MACH]] = FORBIDDEN;
+                    masterGrid[newPairs[0]][n][LOGIC] = FORBIDDEN;
+                    masterGrid[n][newPairs[1]][LOGIC] = FORBIDDEN;
                 }
-                operationGrid[newPairs[TASK]][newPairs[MACH]] = ASSIGNED;
+                masterGrid[newPairs[0]][newPairs[1]][LOGIC] = ASSIGNED;
             } else {
                 parseError("fpa");
             }
@@ -192,8 +184,10 @@ public class SplashParser {
     }
 
     // This function handles flags for data assignment and error checking. It will also check if invalid strings are in the input.
+    // Potential fringe case --> if line being parsed starts with a bracket it will be processed and trigger a different error instead of "error while parsing input file"
+ 
     private void flagProcessor(String flagText) {
-
+	//Check format of initial label 
         if (flagText.equals("Name:"))
         {
             setName = true;
@@ -222,11 +216,15 @@ public class SplashParser {
         }
         else if (flagText.equals("too-near penalities"))
         {
+            if (lineCounter != SIZEMAX) {
+                // Correct MP input is always 8 lines.
+                parseError("intCrash");
+            }
             setTNP = true;
             setTNT = false;
         }
         else
-        {
+        {	
             // Checks for Name input for later ASCII index.
             if (setName == true && setFPA == false) {
                 setName = false;
@@ -236,22 +234,22 @@ public class SplashParser {
         }
     }
 
-    // This function processes string in form of "(machine,task)", "(task,task)", or "(machine,task,penalty)" and process into array for data structure.
+    // This function processes string in form of "(machine,task)", "(task,task)", or "(machine,task,penalty)" and processes into an array for data structure.
     private int[] pairProcessor(String tempStr) {
-        String[] retStr = tempStr.trim().split(",");
+        String[] retStr = tempStr.split(",");
         int[] retVal = new int[retStr.length];
 
         try {
             // Try to parse the machine (int) input.
-            retVal[0] = Integer.parseInt(retStr[0]) - 1;
+            retVal[0] = Integer.parseInt(retStr[0].trim()) - 1;
         } catch (NumberFormatException e) {
             // If it fails, it must be task or invalid, process it as though it is task.
-            retVal[0] = (int) retStr[0].charAt(0);
+            retVal[0] = (int) retStr[0].trim().charAt(0);
             retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
         }
         
         // Second input is always task.
-        retVal[1] = (int) retStr[1].charAt(0);
+        retVal[1] = (int) retStr[1].trim().charAt(0);
         retVal[1] = retVal[1] + ASCII_CAP_CHAR_FIX;
         if (retStr.length > 2) {
             // If there are more than three variable discovered, it is TNP, process penalty.
@@ -271,10 +269,10 @@ public class SplashParser {
 
     // Handles line of integer for MP.
     private int[] lineProcessor(String tempStr) {
-        String[] retStr = tempStr.trim().split(" ");
+        String[] retStr = tempStr.split(" ");
         int[] retVal = new int[SIZEMAX];
 
-        // If there are more or less than 8 entry, crash.
+        // If there are more or less than 8 entries, crash.
         if (retStr.length != SIZEMAX) {
             parseError("intCrash");
         }
@@ -317,12 +315,16 @@ public class SplashParser {
             }
         }
         else if (erCode.contentEquals("collision"))
-        {
-            System.out.println("No valid solution possible!");
+        { 
+           System.out.println("No valid solution possible!");
         }
         else if (erCode.contentEquals("nullMT"))
         {
-            System.out.println("invalid machine/task");
+	        if (setTNP == false) {
+		        System.out.println("invalid machine/task");
+	        } else {
+		        System.out.println("invalid task");
+	        }
         }
         else if (erCode.contentEquals("nullP"))
         {
@@ -331,6 +333,7 @@ public class SplashParser {
         else if (erCode.contentEquals("inFault"))
         {
             // It is presumed that Name will not start with bracket.
+	        // Patch for Name starting with bracket
             System.out.println("Error while parsing input file");
         }
         else
@@ -343,7 +346,7 @@ public class SplashParser {
         System.exit(0);
     }
 
-    private void systemStatePrinter() {
+    public void systemStatePrinter() {
         if (setName == true) {
             System.out.println("Set Name: true");
         }
@@ -362,9 +365,7 @@ public class SplashParser {
         if (setTNP == true) {
             System.out.println("Set TNP: true");
         }
-        System.out.println("Penalty: " + fpaPenalty);
         System.out.println("Cycle: " + execCycle);
-        printMe("logic");
-        printMe("task");
+        printMe();
     }
 }
