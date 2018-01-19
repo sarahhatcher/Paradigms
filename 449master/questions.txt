@@ -1,0 +1,47 @@
+Seeing as how there is a link to a section of text in the assignment page, am I
+  right to assume that it will be material that can make it's way onto the test?
+
+  ANS: will not be tested on this textbook entry
+
+For all these hard constraints, if in their description occurs either a
+  machine that is not in {1,2,3,4,5,6,7,8} or a task that is not in
+  {A,B,C,D,E,F,G,H}, then the system should terminate with the message
+  "invalid machine/task". For hard constraint forced partial assignments
+  should it also have this "invalid machine/task" error? or is an
+  attempt at assigning tasks incorrectly here a "No valid solution possible"
+  error?
+  ANS: "No Valid solution possible" for errors related to forced partial &
+  forbidden mach  in this case.
+
+  Does this mean that the solution for the assignment output in this order?
+  "invalid machine/task" > "Error while parsing input file" >
+  "partial assignment error" > "No valid solution possible!" > "Solution"
+
+  YES. Something like this. We need to be careful.
+
+  I suppose its possible that we could throw an error for invalid machine/task
+    before hitting an error while parsing input file? YES
+
+Do the correct solutions for the assignment have quotation marks on the output
+  or should we output the text in the quotations only, without the marks?
+  ANS: Without quotation marks.
+
+Should the "No valid solution possible!\n" have the newline? will that change
+  the ability of the test programs to check the answer? invalid? I dunno. How
+  does output work???!?
+
+For the parser error are you expecting us to handle extra spaces between letters
+  and between words?
+  i.e "forced  partial assignment: " (two spaces between forced and partial) VALID
+      " for ced partial assignment" (space between forced and partial) INVALID
+      "Forced partial assignment" (is this case sensitive?) INVALID
+      "forcedpartialassignment" (no spaces at all) INVALID
+
+      what about no newline for some cases? INVALID
+      extra newlines? INVALID
+
+"Too near penalty" has no ':' at the end like the rest. Is this intended?
+
+sarah outout question
+errors outside of defined set
+spelling mistake for penalty
