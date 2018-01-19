@@ -78,7 +78,12 @@ public class splashSearch{
     do{
       while(remainingMachines.size() != 0){								//Check if all possible branches have been created from current node
         buildBranches();
-        pickBestChild();
+        if(currentNode.children.size()!=0){
+          pickBestChild();
+        }else{
+          break;
+        }
+
       }
       //Should always now be in a leaf
       updateBestSoln();
@@ -115,38 +120,54 @@ public class splashSearch{
 
 
   public void buildBranches(){
-    if(currentNode.active){											     //If children have never been created
-        int nextMachine = remainingMachines.get(0);					//Set the next machine to assign to (implement algorithm to pick best next machine)
+    if(currentNode.active){								 //Check if children have never been created
 
+        //Optional: the next machine to assign to (implement algorithm to pick best next machine)
+
+        int nextMachine = remainingMachines.get(0);
         for(int task=0; task < remainingTasks.size(); task++)		//For each unassigned task
         {
           int nextTask = remainingTasks.get(task);
-          Node node = new Node(currentNode, nextMachine, remainingTasks.get(task), searchArray[nextMachine][nextTask][0]);	//Create a new node which links to this node
-          //System.out.println("Node machine: " + node.machine + "  Index: " + node.task + "   created");
+          //Create a new node which child to 'currentNode'
+          int i = searchArray[nextMachine][nextTask][0];
+          if(i!=-1){
+            // need method for TNT and TNP
+
+            // make a new Node(parent,mach, task, pen)
+            Node node = new Node(currentNode, nextMachine, remainingTasks.get(task), searchArray[nextMachine][nextTask][0]);
+            //System.out.println("Node machine: " + node.machine + "  Index: " + node.task + "   created"); // error checking line
+          }
+
         }
 
-        currentNode.active = false;									//Close node so it won't make new nodes again
+        //Close 'currentNode' so it won't make new nodes again, as you have just created all possible children
+        currentNode.active = false;
     }
   }
-
-
-  public void updateBestSoln(){
-    if(currentNode.accumulatedPenalty < lowestPenalty || lowestPenalty == -1){
-			bestAssignment.clear();
-				for(Integer i : currentPath){bestAssignment.add(new Integer(i));}	//Record new best path
-				lowestPenalty = currentNode.accumulatedPenalty;						//Remember lowest penalty
-			}
-    }
 
 
   public void pickBestChild(){
     currentNode = currentNode.children.get(0);						//Pick a node to climb down to
-    remainingMachines.remove(arrayListSearch(remainingMachines, currentNode.machine));				//Remove machine and task from available list and adds to path
+
+    //once you picked a node, make sure that same node does not make a child of it's own data
+    remainingMachines.remove(arrayListSearch(remainingMachines, currentNode.machine));
     remainingTasks.remove(arrayListSearch(remainingTasks, currentNode.task));
 
+    //add the picked node to the current solution path
     currentPath.set(currentNode.machine, currentNode.task);
   }
 
+  public void updateBestSoln(){
+    if(remainingMachines.size()==0){
+      if(currentNode.accumulatedPenalty < lowestPenalty || lowestPenalty == -1){
+        bestAssignment.clear();
+          for(Integer i : currentPath){
+            bestAssignment.add(new Integer(i)); //Record new best path
+          }
+          lowestPenalty = currentNode.accumulatedPenalty;						//Remember lowest penalty
+        }
+      }
+    }
 
   public void backTrack(){
     while(currentNode.children.size() == 0 && currentNode.parent != null){	//Until there is a child to climb down to
@@ -160,16 +181,6 @@ public class splashSearch{
       //System.out.println("Climbed up to machine: " +currentNode.machine+ "  task: " +currentNode.task);
     }
   }
-
-
-
-
-
-
-
-
-
-
 
   //Finds index of an element in an array list
   static int arrayListSearch(ArrayList<Integer> list, int element)
