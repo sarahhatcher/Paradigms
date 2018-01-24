@@ -150,21 +150,37 @@ public class splashSearch{
           int i = searchArray[nextMachine][nextTask][0];
           if(i!=-1){
 
-            //Find if there is a task assigned to last machine to conflict with
+            //Find if there is a task assigned to left machine to conflict with
             if(nextMachine != 0){
-              lastMachine = nextMachine - 1;
-              futureTask = nextMachine + 1;
+              leftMachine = nextMachine - 1;						
             }
             else {
-              lastMachine = 7;
+              leftMachine = 7;
+            }
+            
+            if(nextMachine != 7){
+            	rightMachine = nextMachine + 1;
+            }
+            else{
+            	rightMachine = 0;
             }
 
-            lastTask = currentPath.get(lastMachine);
+            leftTask = currentPath.get(leftMachine);			//Get task assigned to the machine on the left
+            rightTask = currentPath.get(rightMachine);
 
-            if(lastTask != -1){
-              penalty = searchArray[lastTask][nextTask][1];
+            //If the left task has been been assigned, find the penalty or restriction
+            if(leftTask != -1){
+                if(searchArray[leftTask][nextTask][1]==-1){continue;}
+                penalty += searchArray[leftTask][nextTask][1];
             }
+            
+            
+            if(rightTask != -1){
+                if(searchArray[nextTask][rightTask][1]==-1){continue;}
+                penalty += searchArray[nextTask][rightTask][1];
+              }
 
+            //If the left task was not assigned or the left task is not a TNT, create node.
             if(penalty != -1){
               penalty += searchArray[nextMachine][nextTask][0];
               // make a new Node(parent,mach, task, pen)
