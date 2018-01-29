@@ -1,0 +1,44 @@
+Name:
+FPA1P
+
+forced partial assignment:
+(1,A)
+(7,G)
+(2,B)
+(4,C)
+(5,H)
+(5,H)
+
+forbidden machine:
+(1,C)
+
+too-near tasks:
+(A,H)
+(B,G)
+(C,F)
+
+machine penalties:
+33 94 74 2 71 34 2 18
+10 52 36 93 17 5 32 69
+8 80 44 72 33 30 62 77
+97 17 2 61 42 63 59 71
+99 51 78 13 97 19 20 74
+75 48 27 54 76 6 97 43
+62 60 76 31 55 10 84 54
+96 15 64 63 79 50 7 44
+
+too-near penalities
+(A,B,1)
+(B,C,2)
+(C,D,3)
+(D,E,4)
+(E,F,5)
+(F,G,6)
+(G,H,7)
+(B,A,7)
+(C,B,6)
+(D,C,5)
+(E,D,4)
+(F,E,3)
+(G,F,2)
+(H,G,1)
