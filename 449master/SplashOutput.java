@@ -65,7 +65,7 @@ public class SplashOutput {
 		  break;
       //Error thrown in in the too near input there is a task in the three tuples that is outside the set of tasks
 	  case 5:
-		  errorMessage = "invalid task";
+		  errorMessage = "invalid task description";
 		  printFile(errorMessage);
 		  System.exit(0);
 		  break;
