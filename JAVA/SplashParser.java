@@ -8,16 +8,25 @@ import java.util.*;
 //       WARNING: Above solution handles this in O(mn), hopefully this algorithm is fast enough.
 //       Bracket exception cases from 0.4v has been solved, now it will correctly recognize if brackets are correctly set.
 //       Pair processor now tests if number of argument being passed is correct for currently processing sections.
+// v0.6:
+//      SplashParser now parses empty line strictly.
+//      Flag texts are now properly canned for any extra whitespace before content is checked.
+//      SplashParser now strictly verifies the order of the flags set to match correct processing order. (Name -> FPA -> FM -> TNT -> MP -> TNP.) Otherwise, 'inFault' triggers.
+//      int fpaPenalty is removed, as it is no longer used.
+//      masterGrid is now private once again, it is unknown why it was public in the first place. Only debug methods and constant variables should be directly accesible.
+// TODO:
+//      For some reason, parseError() is directly calling method from uninitialized SplashOutput, this should be fixed.
+//      Based on program structure, it seems as though debugging and errors should be handled by separate class than SplashParser.
 
 public class SplashParser {
 
     private BufferedReader br;
     private FileReader fr;
 
-    public int[][][] masterGrid; // General Matrix, at third place, 0 is used for Logic Matrix, and 1 is used for Task Matrix.
-    private int fpaPenalty; // Total cumulative penalty from forced partial assignment.
+    private int[][][] masterGrid; // General Matrix, at third place, 0 is used for Logic Matrix, and 1 is used for Task Matrix.
     //Boolean for each step of parsing string
     //Set flag as we parse
+    private boolean firstFlag = false; // Checks if name was ever processed by the SplashParser.
     private boolean setName = false; //True when name is not in correct format -->name::
     private boolean setFPA = false; //Check if structure remains--> no error
     private boolean setFM = false;
@@ -25,8 +34,9 @@ public class SplashParser {
     private boolean setMP = false;
     private boolean setTNP = false;
     private boolean setCollision = false;
+    private int emptyExpected = false; // Whenever an empty line is processed, check this value to see if there should have been an empty line. otherwise, throw exception.
     private int execCycle = 0; //Debugging variable.
-    private int lineCounter = 0; //lineCounter tracks the number of lines that have been parsed for machine penalty. If it isn't exactly 8 after MP is processed, throw error.
+    private int lineCounter = 0; // lineCounter tracks the number of lines that have been parsed for machine penalty. If it isn't exactly 8 after MP is processed, throw error.
 
     public static final byte ASCII_INT_CHAR_FIX = -48;
     public static final byte ASCII_CAP_CHAR_FIX = -65;
@@ -66,11 +76,14 @@ public class SplashParser {
                 // Verifies if the line read is not the empty line.
                 tempStr = tempStr.trim();
 
-                //If the processed string is not empty then read the first character
+                //If the processed string is not empty then read the first character, if it is empty, set flags to ready for next flag text. If flag text does not come, exception.
                 if (!tempStr.contentEquals("")) {
                     verify = (byte) tempStr.charAt(0);
+                } else if (emptyExpected) {
+                    parseError("inFault");
                 } else {
                     verify = PLACEHOLDER; // If it is, assign null ASCII text.
+                    emptyExpected = true; // Set empty line processed flag.
                 }
 
                 if (tempStr.startsWith("(") && tempStr.endsWith(")")) // If the line starts with bracket
@@ -120,7 +133,9 @@ public class SplashParser {
             }
 
             // Handler for collision caused no-solution matrix is moved outside of actual parsing process.
-            if (setCollision == true) {
+            if (setTNP == false) {
+                parseError("inFault");
+            } else if (setCollision == true) {
                 parseError("collision");
             }
 
@@ -155,7 +170,6 @@ public class SplashParser {
         }
       }
       System.out.println();
-        /*Syste
         /*System.out.println("Initiating Debug Output.");
 
         for (byte i=0; i < 2; i++) {
@@ -207,13 +221,17 @@ public class SplashParser {
     // This function handles flags for data assignment and error checking. It will also check if invalid strings are in the input.
     // Potential fringe case --> if line being parsed starts with a bracket it will be processed and trigger a different error instead of "error while parsing input file"
 
-    private void flagProcessor(String flagText) {
-	//Check format of initial label
+    private void flagProcessor(String tempStr) {
+        // Start by canning any extra empty spaces introduced in the text when format is correct.
+        flagText = blankCanner(tempStr);
+
+	    // Check format of initial label
         if (flagText.equals("Name:"))
         {
             setName = true;
+            firstFlag = true;
         }
-        else if (flagText.equals("forced partial assignment:"))
+        else if (flagText.equals("forced partial assignment:") && firstFlag)
         {
             // Missing Name input check
             if (setName == true) {
@@ -221,21 +239,21 @@ public class SplashParser {
             }
             setFPA = true;
         }
-        else if (flagText.equals("forbidden machine:"))
+        else if (flagText.equals("forbidden machine:") && setFPA)
         {
             setFM = true;
             setFPA = false;
         }
-        else if (flagText.equals("too-near tasks:"))
+        else if (flagText.equals("too-near tasks:") && setFM)
         {
             setTNT = true;
             setFM = false;
         }
-        else if (flagText.equals("machine penalties:"))
+        else if (flagText.equals("machine penalties:") && setTNT)
         {
             setMP = true;
         }
-        else if (flagText.equals("too-near penalities"))
+        else if (flagText.equals("too-near penalities") && setMP)
         {
             if (lineCounter != SIZEMAX) {
                 // Correct MP input is always 8 lines.
@@ -253,6 +271,9 @@ public class SplashParser {
                 parseError("inFault");
             }
         }
+
+        // Reset the flag for empty line since flag is set.
+        emptyExpected = false;
     }
 
     // This function processes string in form of "(machine,task)", "(task,task)", or "(machine,task,penalty)" and processes into an array for data structure.

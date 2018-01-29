@@ -45,7 +45,7 @@ public class Scheduler
         }
         int[][][] pntArray = new int[8][8][2];
         SplashParser parseInstance = new SplashParser(args[0]);
-        pntArray = parseInstance.masterGrid;
+        pntArray = parseInstance.fetchMatrix();
         parseInstance.systemStatePrinter();
 
         splashSearch searchInstance = new splashSearch(pntArray);
