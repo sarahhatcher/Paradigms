@@ -31,7 +31,7 @@
 
 public class Scheduler
 {
-	//
+	static String outputFile;
     public static void main (String[] args)
     {
         if (args.length < 2) {
@@ -40,6 +40,7 @@ public class Scheduler
             System.exit(0);
         }
         int[][][] pntArray = new int[8][8][2];
+        outputFile = args[1]; 
         SplashParser parseInstance = new SplashParser(args[0]);
         pntArray = parseInstance.masterGrid;
         parseInstance.systemStatePrinter();
