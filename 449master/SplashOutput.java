@@ -4,12 +4,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class SplashOutput {
+	
    public static void printFile(String message) {
 	   BufferedWriter bufferWriter = null;
 	      try {
 		 String output = message;
 	         //Specify the file name and path here
-		 File file = new File("output.txt" );
+		 File file = new File(Scheduler.outputFile);
 
 		  if (!file.exists()) {
 		     file.createNewFile();
