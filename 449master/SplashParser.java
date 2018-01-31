@@ -4,7 +4,10 @@ import java.util.*;
 // v0.4: Output matrix is now masterGrid[][][].
 //       Error handling has been altered: Collision will be no longer processed during parsing.
 //       FPA is no longer pre-calculated. It will be assigned normally. ASSIGN constant is kept for the purpose of detecting collision.
-// TODO: Error detection related to bracket is yet to be fixed.
+// v0.5: Empty space parsing is now flexible, it will process correctly regardless of number of empty space between.
+//       WARNING: Above solution handles this in O(mn), hopefully this algorithm is fast enough.
+//       Bracket exception cases from 0.4v has been solved, now it will correctly recognize if brackets are correctly set.
+//       Pair processor now tests if number of argument being passed is correct for currently processing sections.
 
 public class SplashParser {
 
@@ -13,6 +16,7 @@ public class SplashParser {
 
     public int[][][] masterGrid; // General Matrix, at third place, 0 is used for Logic Matrix, and 1 is used for Task Matrix.
     private int fpaPenalty; // Total cumulative penalty from forced partial assignment.
+    private int minPenalty; // To end Parser Earlier
     //Boolean for each step of parsing string
     //Set flag as we parse
     private boolean setName = false; //True when name is not in correct format -->name::
@@ -70,7 +74,7 @@ public class SplashParser {
                     verify = PLACEHOLDER; // If it is, assign null ASCII text.
                 }
 
-                if (verify == BRACKET) // If the line starts with bracket
+                if (tempStr.startsWith("(") && tempStr.endsWith(")")) // If the line starts with bracket
                 {
                     // FPA, FM, TNT, TNP takes in "(int, char)" as input. As such, it detects '('.
                     int[] processedString = pairProcessor(tempStr.substring(1, tempStr.length()-1));
@@ -98,7 +102,7 @@ public class SplashParser {
                         parseError("intCrash");
                     }
                 }
-		// If the line starts with english letter
+		        // If the line starts with english letter
                 else if (((verify > ASCII_LOWER_RANGE[0]) && (verify < ASCII_LOWER_RANGE[1])) || ((verify > ASCII_UPPER_RANGE[0]) && (verify < ASCII_UPPER_RANGE[1]))) {
                     flagProcessor(tempStr);
                 }
@@ -254,24 +258,31 @@ public class SplashParser {
 
     // This function processes string in form of "(machine,task)", "(task,task)", or "(machine,task,penalty)" and processes into an array for data structure.
     private int[] pairProcessor(String tempStr) {
-        String[] retStr = tempStr.split(",");
+        // Remove all empty spaces, then split based on comma.
+        String[] retStr = tempStr.replace(" ", "").split(",");
         int[] retVal = new int[retStr.length];
 
         try {
             // Try to parse the machine (int) input.
-            retVal[0] = Integer.parseInt(retStr[0].trim()) - 1;
+            retVal[0] = Integer.parseInt(retStr[0]) - 1;
         } catch (NumberFormatException e) {
             // If it fails, it must be task or invalid, process it as though it is task.
-            retVal[0] = (int) retStr[0].trim().charAt(0);
+            retVal[0] = (int) retStr[0].charAt(0);
             retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
         }
 
         // Second input is always task.
-        retVal[1] = (int) retStr[1].trim().charAt(0);
+        retVal[1] = (int) retStr[1].charAt(0);
         retVal[1] = retVal[1] + ASCII_CAP_CHAR_FIX;
         if (retStr.length > 2) {
-            // If there are more than three variable discovered, it is TNP, process penalty.
-            retVal[2] = penaltyVerify(retStr[2]);
+            // If there are more than three variable discovered, it is TNP, process penalty. 
+        	//If program tries to process more than two entry when TNP is not being processed, 
+        	//or more than 3 argument is passed, trigger inFault. %DEAD CODE
+            if (setTNP = true || retStr.length == 3) {
+                retVal[2] = penaltyVerify(retStr[2]);
+            } else {
+                parseError("inFault");
+            }
         }
 
         // Check to see if assignment is in expected range. If not, trigger invalid error.
@@ -286,7 +297,9 @@ public class SplashParser {
     }
 
     // Handles line of integer for MP.
-    private int[] lineProcessor(String tempStr) {
+    private int[] lineProcessor(String target) {
+        // Adjust the line such that it is in predictable pattern format of emptyspace-number cycle.
+        String tempStr = blankCanner(target);
         String[] retStr = tempStr.split(" ");
         int[] retVal = new int[SIZEMAX];
 
@@ -296,7 +309,7 @@ public class SplashParser {
         }
 
         for (byte i=0; i < SIZEMAX; i++) {
-            retVal[i] = penaltyVerify(retStr[i].trim());
+            retVal[i] = penaltyVerify(retStr[i]);
         }
 
         return retVal;
@@ -315,6 +328,29 @@ public class SplashParser {
             parseError("nullP");
         }
         return output;
+    }
+
+    // This function will scan entire line, then compress multiple empty space into single empty space.
+    private String blankCanner(String target) {
+        int trace = 0;
+        int endOfLine = target.length();
+        char[] tempChars = target.toCharArray();
+
+        // Goes through entire string as character array, and replaces any extra empty spaces into '#'.
+        while (trace < endOfLine-1) {
+            if (tempChars[trace] == ' ' || tempChars[trace] == '#') {
+                if (tempChars[trace+1] == ' ') {
+                    tempChars[trace+1] = '#';
+                }
+            }
+            trace = trace + 1;
+        }
+
+        // Create new text strings using processed character arrays, then replace all placeholder '#' into null.
+        String newTarget = new String(tempChars);
+        newTarget = newTarget.replace("#", "");
+
+        return newTarget;
     }
 
     // Catch no name error here by ordering of errors and if statements checking setName status when later error triggers.
