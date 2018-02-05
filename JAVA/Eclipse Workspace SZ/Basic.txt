@@ -1,5 +1,5 @@
 Name:
-Basic
+Basic1
 
 forced partial assignment:
 (1,A)

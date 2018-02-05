@@ -1,13 +1,9 @@
 Name:
-Forbidden&Forced
+Missing
 
 forced partial assignment:
-(1,C)
 
 forbidden machine:
-(1,C)
-
-too-near tasks:
 
 machine penalties:
 1 1 1 1 1 1 1 1
@@ -17,6 +13,7 @@ machine penalties:
 1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1
-1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 -1
 
 too-near penalities
+

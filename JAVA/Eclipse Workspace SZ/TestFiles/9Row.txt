@@ -1,15 +1,14 @@
 Name:
-Forbidden&Forced
+9Line
 
 forced partial assignment:
-(1,C)
 
 forbidden machine:
-(1,C)
 
 too-near tasks:
 
 machine penalties:
+1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1

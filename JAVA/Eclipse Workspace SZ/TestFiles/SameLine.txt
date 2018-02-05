@@ -1,11 +1,10 @@
 Name:
-Forbidden&Forced
+InvalidArg
 
 forced partial assignment:
-(1,C)
 
 forbidden machine:
-(1,C)
+(1,A)(2,B)
 
 too-near tasks:
 

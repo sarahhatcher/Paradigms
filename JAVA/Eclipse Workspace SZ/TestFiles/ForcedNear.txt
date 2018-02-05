@@ -1,13 +1,15 @@
 Name:
-Forbidden&Forced
+ForcedNear
 
 forced partial assignment:
-(1,C)
+(1,A)
+(2,B)
 
 forbidden machine:
-(1,C)
 
 too-near tasks:
+(1,A)
+(2,B)
 
 machine penalties:
 1 1 1 1 1 1 1 1

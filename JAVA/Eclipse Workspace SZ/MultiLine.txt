@@ -1,13 +1,15 @@
 Name:
-Forbidden&Forced
+MultiLine
 
-forced partial assignment:
-(1,C)
 
-forbidden machine:
-(1,C)
+forced  partial assignment:
 
-too-near tasks:
+
+forbidden  machine:
+
+
+too-near  tasks:
+
 
 machine penalties:
 1 1 1 1 1 1 1 1
@@ -19,4 +21,6 @@ machine penalties:
 1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1
 
+
 too-near penalities
+
