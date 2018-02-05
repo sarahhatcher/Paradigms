@@ -1,0 +1,21 @@
+Name:
+name1
+name2
+
+forced partial assignment:
+
+forbidden machine:
+
+too-near tasks:
+
+machine penalties:
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+
+too-near penalities

@@ -1,0 +1,24 @@
+Name:
+ForcedNear
+
+forced partial assignment:
+(1,A)
+(2,B)
+
+forbidden machine:
+
+too-near tasks:
+(1,A)
+(2,B)
+
+machine penalties:
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+
+too-near penalities

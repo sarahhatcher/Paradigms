@@ -1,0 +1,21 @@
+Name:
+WrongCat
+
+forced partial asignment:
+
+forbidden machine:
+
+too-near tasks:
+
+machine penalties:
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 -1
+
+too-near penalities
+
