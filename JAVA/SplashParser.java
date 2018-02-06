@@ -158,7 +158,6 @@ public class SplashParser {
       System.out.println();
         /*Syste
         /*System.out.println("Initiating Debug Output.");
-
         for (byte i=0; i < 2; i++) {
             for (byte j=0; j < SIZEMAX; j++) {
                 for (byte k=0; k < SIZEMAX; k++) {
@@ -281,7 +280,7 @@ public class SplashParser {
             // If there are more than three variable discovered, it is TNP, process penalty.
         	//If program tries to process more than two entry when TNP is not being processed,
         	//or more than 3 argument is passed, trigger inFault. %DEAD CODE
-            if (setTNP == true || retStr.length == 3) {
+            if (setTNP == true && retStr.length == 3) {
                 retVal[2] = penaltyVerify(retStr[2]);
             } else {
                 parseError("inFault");
@@ -425,6 +424,3 @@ public class SplashParser {
             System.out.println("Set Collision: true");
         }
         System.out.println("Cycle: " + execCycle);
-        printMe();
-    }
-}
