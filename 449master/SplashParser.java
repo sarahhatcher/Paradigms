@@ -51,7 +51,7 @@ public class SplashParser {
 
 	    //Create new fileReader with INPUTNAME
 	    ////Create new BufferedReader
-            fr = new FileReader(inputName + ".txt");
+            fr = new FileReader(inputName);
             br = new BufferedReader(fr);
 
 	    //tempStr is string being processed
@@ -158,7 +158,6 @@ public class SplashParser {
       System.out.println();
         /*Syste
         /*System.out.println("Initiating Debug Output.");
-
         for (byte i=0; i < 2; i++) {
             for (byte j=0; j < SIZEMAX; j++) {
                 for (byte k=0; k < SIZEMAX; k++) {
@@ -265,6 +264,9 @@ public class SplashParser {
         try {
             // Try to parse the machine (int) input.
             retVal[0] = Integer.parseInt(retStr[0]) - 1;
+            if(setTNT == true || setTNP == true) {
+            	parseError("inFault");
+            }
         } catch (NumberFormatException e) {
             // If it fails, it must be task or invalid, process it as though it is task.
             retVal[0] = (int) retStr[0].charAt(0);
@@ -278,7 +280,7 @@ public class SplashParser {
             // If there are more than three variable discovered, it is TNP, process penalty. 
         	//If program tries to process more than two entry when TNP is not being processed, 
         	//or more than 3 argument is passed, trigger inFault. %DEAD CODE
-            if (setTNP = true || retStr.length == 3) {
+            if (setTNP == true && retStr.length == 3) {
                 retVal[2] = penaltyVerify(retStr[2]);
             } else {
                 parseError("inFault");
