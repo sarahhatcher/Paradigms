@@ -18,7 +18,7 @@ negative_pen: error
 
   Suite of tests for order of error operations
 orderspaces: parser error happens before the invalid mach?
-order_double_assign: partial assignment error happens before no valid solution 
+order_double_assign: partial assignment error happens before no valid solution
 
 
 overwrite_near_pen_decreased: 11 penalty ( overwrite is correct)
@@ -26,7 +26,7 @@ overwrite_near_pen_increased: 12 penalty
 sudoku: some penalty
 titlespace: parser error
 too_near_double_forced: no valid sol
-too_near_input: parser error (parser doesn't register that there is a number)
+too_near_input: parser error
 zero: 0 penalty
 zeroforbidden: 0 penalty
 zeroforced: 0 penalty
