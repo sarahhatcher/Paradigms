@@ -10,6 +10,9 @@ forcedforbid: No valid solution
 forced_forbid_parser: parser error
 forced_wrong: parser error (error in input isn't caught)
 minimalisticexample: 8 penalty
+missing_title: parser error ??? (we currently return a parser error, is that correct)
+missing_too-near: parser error (does not handle missing things)
+missing: parser error (does not handle missing things)
 natural_numbers: large pen
 negative_pen: error
 orderspaces: parser error
