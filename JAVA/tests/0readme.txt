@@ -18,7 +18,7 @@ negative_pen: error
 
   Suite of tests for order of error operations
 orderspaces: parser error happens before the invalid mach?
-order_double_assign
+order_double_assign: partial assignment error happens before no valid solution 
 
 
 overwrite_near_pen_decreased: 11 penalty ( overwrite is correct)
