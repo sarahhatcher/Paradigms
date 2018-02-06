@@ -15,7 +15,12 @@ missing_too-near: parser error (does not handle missing things)
 missing: parser error (does not handle missing things)
 natural_numbers: large pen
 negative_pen: error
-orderspaces: parser error
+
+  Suite of tests for order of error operations
+orderspaces: parser error happens before the invalid mach?
+order_double_assign
+
+
 overwrite_near_pen_decreased: 11 penalty ( overwrite is correct)
 overwrite_near_pen_increased: 12 penalty
 sudoku: some penalty
