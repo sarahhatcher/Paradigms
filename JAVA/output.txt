@@ -1,0 +1,1 @@
+Solution A  H  B  C  D  E  F  G ; Quality: 1000000100
