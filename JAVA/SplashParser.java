@@ -26,6 +26,8 @@ import java.util.*;
 //      Duplicate entry detection has been reverted.
 //      Flag text processor now checks if last line was empty line.
 //      FPA and FM will no longer simply assign (Task,Task) pair input as though it is a valid input.
+//      Actual error processor for infault has been added
+//      Line Processor no longer crashes for extra row during MP
 // TODO:
 //      For some reason, parseError() is directly calling method from uninitialized SplashOutput, this should be fixed.
 //      There has to be at least one newline before flag text is processed.
@@ -120,7 +122,7 @@ public class SplashParser {
                 }
                 else if ((verify > ASCII_INT_RANGE[0]) && (verify < ASCII_INT_RANGE[1])) // If the line starts with number
                 {
-                    if (setMP == true) {
+                    if (setMP == true && lineCounter < SIZEMAX) {
                         // If a line starts with number it is presumed that it is the line for Machine Penalty.
                         int[] tempValue = lineProcessor(tempStr);
                         for (byte n = 0; n < SIZEMAX; n++)
@@ -337,7 +339,7 @@ public class SplashParser {
         retVal[1] = retVal[1] + ASCII_CAP_CHAR_FIX;
         if (retStr.length > 2) {
             // If there are more than three variable discovered, it is TNP, process penalty. If program tries to process more than two entry when TNP is not being processed, or more than 3 argument is passed, trigger inFault.
-            if (setTNP = true || retStr.length == 3) {
+            if (setTNP = true && retStr.length == 3) {
                 retVal[2] = penaltyVerify(retStr[2]);
             } else {
                 parseError("inFault");
@@ -458,11 +460,11 @@ public class SplashParser {
               {
                   System.out.println("Unknown error has occured during input parsing. Aborting.");
               }
-              systemStatePrinter(erCode);
+              systemStatePrinter();
               System.exit(0);
           }
 
-    public void systemStatePrinter(String erCode) {
+    public void systemStatePrinter() {
         if (setName == true) {
             System.out.println("Set Name: true");
         }
@@ -484,7 +486,6 @@ public class SplashParser {
         if (setCollision == true) {
             System.out.println("Set Collision: true");
         }
-        System.out.println("Error Occured: " + erCode);
         System.out.println("Cycle: " + execCycle);
         printMe();
     }
