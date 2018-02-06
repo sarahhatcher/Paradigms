@@ -264,8 +264,8 @@ public class SplashParser {
         try {
             // Try to parse the machine (int) input.
             retVal[0] = Integer.parseInt(retStr[0]) - 1;
-            if(setTNT==true){
-              SplashOutput.printError(1);
+            if(setTNT == true || setTNP == true) {
+            	parseError("inFault");
             }
         } catch (NumberFormatException e) {
             // If it fails, it must be task or invalid, process it as though it is task.
@@ -277,8 +277,8 @@ public class SplashParser {
         retVal[1] = (int) retStr[1].charAt(0);
         retVal[1] = retVal[1] + ASCII_CAP_CHAR_FIX;
         if (retStr.length > 2) {
-            // If there are more than three variable discovered, it is TNP, process penalty.
-        	//If program tries to process more than two entry when TNP is not being processed,
+            // If there are more than three variable discovered, it is TNP, process penalty. 
+        	//If program tries to process more than two entry when TNP is not being processed, 
         	//or more than 3 argument is passed, trigger inFault. %DEAD CODE
             if (setTNP == true && retStr.length == 3) {
                 retVal[2] = penaltyVerify(retStr[2]);
@@ -396,7 +396,6 @@ public class SplashParser {
               else
               {
                   System.out.println("Unknown error has occured during input parsing. Aborting.");
-                  SplashOutput.printError(1);
               }
               System.exit(0);
           }
@@ -424,3 +423,6 @@ public class SplashParser {
             System.out.println("Set Collision: true");
         }
         System.out.println("Cycle: " + execCycle);
+        printMe();
+    }
+}
