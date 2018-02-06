@@ -1,13 +1,6 @@
 import java.io.*;
 import java.util.*;
 
-// v0.4: Output matrix is now masterGrid[][][].
-//       Error handling has been altered: Collision will be no longer processed during parsing.
-//       FPA is no longer pre-calculated. It will be assigned normally. ASSIGN constant is kept for the purpose of detecting collision.
-// v0.5: Empty space parsing is now flexible, it will process correctly regardless of number of empty space between.
-//       WARNING: Above solution handles this in O(mn), hopefully this algorithm is fast enough.
-//       Bracket exception cases from 0.4v has been solved, now it will correctly recognize if brackets are correctly set.
-//       Pair processor now tests if number of argument being passed is correct for currently processing sections.
 
 public class SplashParser {
 
@@ -268,6 +261,9 @@ public class SplashParser {
             	parseError("inFault");
             }
         } catch (NumberFormatException e) {
+        		if(setFPA == true || setFM == true) {
+        			parseError("inFault");
+        		}
             // If it fails, it must be task or invalid, process it as though it is task.
             retVal[0] = (int) retStr[0].charAt(0);
             retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
@@ -277,8 +273,8 @@ public class SplashParser {
         retVal[1] = (int) retStr[1].charAt(0);
         retVal[1] = retVal[1] + ASCII_CAP_CHAR_FIX;
         if (retStr.length > 2) {
-            // If there are more than three variable discovered, it is TNP, process penalty. 
-        	//If program tries to process more than two entry when TNP is not being processed, 
+            // If there are more than three variable discovered, it is TNP, process penalty.
+        	//If program tries to process more than two entry when TNP is not being processed,
         	//or more than 3 argument is passed, trigger inFault. %DEAD CODE
             if (setTNP == true && retStr.length == 3) {
                 retVal[2] = penaltyVerify(retStr[2]);
