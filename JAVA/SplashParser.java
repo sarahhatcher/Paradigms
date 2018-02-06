@@ -9,14 +9,28 @@ import java.util.*;
 //       Bracket exception cases from 0.4v has been solved, now it will correctly recognize if brackets are correctly set.
 //       Pair processor now tests if number of argument being passed is correct for currently processing sections.
 // v0.6:
-//      SplashParser now parses empty line strictly.
+//      SplashParser now parses newline strictly.
 //      Flag texts are now properly canned for any extra whitespace before content is checked.
 //      SplashParser now strictly verifies the order of the flags set to match correct processing order. (Name -> FPA -> FM -> TNT -> MP -> TNP.) Otherwise, 'inFault' triggers.
 //      int fpaPenalty is removed, as it is no longer used.
 //      masterGrid is now private once again, it is unknown why it was public in the first place. Only debug methods and constant variables should be directly accesible.
+// v0.7:
+//      Altered strict line parsing policy, Any number of newline should be allowed when newline should be allowed.
+//      Improved file name handling, it will now recognize if parameter typed file extension (.txt) or not.
+// v0.8:
+//      Strict line policy has been rolledback entirely. Any number of empty new line should be allowed indiscrimately.
+//      Strict whitespace policy has been implemented, exception only for EOL. Which includes line exclusively containing only whitespaces.
+//      Duplicate Flag text is no longer allowed.
+//      Duplicate entry in FPA, FM, and TNT now triggers inFault. (Or respective error if required.)
+// v0.9:
+//      Duplicate entry detection has been reverted.
+//      Flag text processor now checks if last line was empty line.
+//      FPA and FM will no longer simply assign (Task,Task) pair input as though it is a valid input.
 // TODO:
 //      For some reason, parseError() is directly calling method from uninitialized SplashOutput, this should be fixed.
-//      Based on program structure, it seems as though debugging and errors should be handled by separate class than SplashParser.
+//      There has to be at least one newline before flag text is processed.
+//      Remove Duplicate entry inFault.
+
 
 public class SplashParser {
 
@@ -34,9 +48,10 @@ public class SplashParser {
     private boolean setMP = false;
     private boolean setTNP = false;
     private boolean setCollision = false;
-    private int emptyExpected = false; // Whenever an empty line is processed, check this value to see if there should have been an empty line. otherwise, throw exception.
-    private int execCycle = 0; //Debugging variable.
     private int lineCounter = 0; // lineCounter tracks the number of lines that have been parsed for machine penalty. If it isn't exactly 8 after MP is processed, throw error.
+    private boolean expectFlags = true;
+
+    private int execCycle = 0; //Debugging variable.
 
     public static final byte ASCII_INT_CHAR_FIX = -48;
     public static final byte ASCII_CAP_CHAR_FIX = -65;
@@ -59,8 +74,11 @@ public class SplashParser {
 	    //May need to update version to include exception handling for non-ascii input (check with prof if need to catch exception for input not in ascii --> outside of parser scope)
 
 	    //Create new fileReader with INPUTNAME
-	    ////Create new BufferedReader
-            fr = new FileReader(inputName + ".txt");
+        ////Create new BufferedReader
+            if (!inputName.endsWith(".txt")) {
+                inputName = inputName + ".txt";
+            }
+            fr = new FileReader(inputName);
             br = new BufferedReader(fr);
 
 	    //tempStr is string being processed
@@ -69,24 +87,32 @@ public class SplashParser {
             byte verify;
 	    //Current data structures before matching to Richards output
 
-	    // Master Marrix initiallization, two 8x8 matrix, 0 for logic 1 for task.
+	        // Master Marrix initiallization, two 8x8 matrix, 0 for logic 1 for task.
             masterGrid = new int[SIZEMAX][SIZEMAX][2];
 
-            while (tempStr != null) {
-                // Verifies if the line read is not the empty line.
-                tempStr = tempStr.trim();
 
-                //If the processed string is not empty then read the first character, if it is empty, set flags to ready for next flag text. If flag text does not come, exception.
+            while (tempStr != null) {
+
+                // If the processed string is not empty then read the first character.
+                // In case newline was processed, set flag to expect either another newline, or flag setting text.
                 if (!tempStr.contentEquals("")) {
                     verify = (byte) tempStr.charAt(0);
-                } else if (emptyExpected) {
-                    parseError("inFault");
                 } else {
                     verify = PLACEHOLDER; // If it is, assign null ASCII text.
-                    emptyExpected = true; // Set empty line processed flag.
+                    expectFlags = true;
                 }
 
-                if (tempStr.startsWith("(") && tempStr.endsWith(")")) // If the line starts with bracket
+                // Clears out whitespace from start, and end of the text.
+                tempStr = tempStr.trim();
+
+                // If the line starts with english letter
+                if (((verify > ASCII_LOWER_RANGE[0]) && (verify < ASCII_LOWER_RANGE[1])) || ((verify > ASCII_UPPER_RANGE[0]) && (verify < ASCII_UPPER_RANGE[1]))) {
+                    if (!expectFlags && !setName) {
+                        parseError("inFault");
+                    } else {
+                        flagProcessor(tempStr);
+                    }
+                } else if (tempStr.startsWith("(") && tempStr.endsWith(")")) // If the line starts with bracket
                 {
                     // FPA, FM, TNT, TNP takes in "(int, char)" as input. As such, it detects '('.
                     int[] processedString = pairProcessor(tempStr.substring(1, tempStr.length()-1));
@@ -113,26 +139,33 @@ public class SplashParser {
                     } else {
                         parseError("intCrash");
                     }
-                }
-		        // If the line starts with english letter
-                else if (((verify > ASCII_LOWER_RANGE[0]) && (verify < ASCII_LOWER_RANGE[1])) || ((verify > ASCII_UPPER_RANGE[0]) && (verify < ASCII_UPPER_RANGE[1]))) {
-                    flagProcessor(tempStr);
-                }
-                else if (verify != PLACEHOLDER) {
-                    // If no criteria is met, but has some ASCII characters, fault
-                    if (setName == true) {
-                        setName = false;
+                } else if (verify != PLACEHOLDER) {
+                    // Three conditions: If name is supposed to be set, and gets some string, presume that was the name.
+                    // If Name was already set, but still gets something, fault.
+                    // Otherwise, it must have been line consist entirely of whitespaces. Skip.
+                    if (!tempStr.contentEquals("")) {
+                        if (setName == true) {
+                            setName = false;
+                        } else {
+                            parseError("inFault");
+                        }
+                    } else {
+                        expectFlags = true;
                     }
-                    else if (!tempStr.contentEquals("")) {
-                        parseError("inFault");
-                    }
                 }
+
+                // This line will check if any valid line was processed, in that case, reset newline seeker for flags.
+                if (!tempStr.contentEquals("")) {
+                    expectFlags = false;
+                }
+
                 // readLine here, so EOL can be terminated correctly.
                 tempStr = br.readLine();
                 execCycle++;
             }
 
             // Handler for collision caused no-solution matrix is moved outside of actual parsing process.
+            // This section also checks if Too-Near-Penalty was attempted to be parsed.
             if (setTNP == false) {
                 parseError("inFault");
             } else if (setCollision == true) {
@@ -216,14 +249,14 @@ public class SplashParser {
                 parseError("fpa");
             }
         }
-    }
+}
 
     // This function handles flags for data assignment and error checking. It will also check if invalid strings are in the input.
     // Potential fringe case --> if line being parsed starts with a bracket it will be processed and trigger a different error instead of "error while parsing input file"
 
     private void flagProcessor(String tempStr) {
-        // Start by canning any extra empty spaces introduced in the text when format is correct.
-        flagText = blankCanner(tempStr);
+        // Whitespaces are no longer canned, as instructed. Blankcanner now simply checks for extra whitespaces.
+        String flagText = blankCanner(tempStr);
 
 	    // Check format of initial label
         if (flagText.equals("Name:"))
@@ -252,6 +285,7 @@ public class SplashParser {
         else if (flagText.equals("machine penalties:") && setTNT)
         {
             setMP = true;
+            setTNT = false;
         }
         else if (flagText.equals("too-near penalities") && setMP)
         {
@@ -260,7 +294,7 @@ public class SplashParser {
                 parseError("intCrash");
             }
             setTNP = true;
-            setTNT = false;
+            setMP = false;
         }
         else
         {
@@ -271,24 +305,31 @@ public class SplashParser {
                 parseError("inFault");
             }
         }
-
-        // Reset the flag for empty line since flag is set.
-        emptyExpected = false;
     }
 
     // This function processes string in form of "(machine,task)", "(task,task)", or "(machine,task,penalty)" and processes into an array for data structure.
     private int[] pairProcessor(String tempStr) {
-        // Remove all empty spaces, then split based on comma.
-        String[] retStr = tempStr.replace(" ", "").split(",");
+        // Counts all whitespaces, then split based on comma.
+        String[] retStr = tempStr.replace(" ", "#").split(",");
         int[] retVal = new int[retStr.length];
+
+        // Check if any extranous whitespace has been introduced.
+        for (byte i=0; i < retStr.length; i++) {
+            if (retStr[i].indexOf("#") != -1) {
+                parseError("inFault");
+            } 
+        }
 
         try {
             // Try to parse the machine (int) input.
             retVal[0] = Integer.parseInt(retStr[0]) - 1;
         } catch (NumberFormatException e) {
-            // If it fails, it must be task or invalid, process it as though it is task.
+            // If it fails, it must be task or invalid, process it as though it is task
             retVal[0] = (int) retStr[0].charAt(0);
-            retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
+            // Just checks if FPA or FM is set at the moment... That should not take two task as input.
+            if (!setFPA && !setFM) {
+                retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
+            }
         }
 
         // Second input is always task.
@@ -317,7 +358,7 @@ public class SplashParser {
     // Handles line of integer for MP.
     private int[] lineProcessor(String target) {
         // Adjust the line such that it is in predictable pattern format of emptyspace-number cycle.
-        String tempStr = blankCanner(target);
+        String tempStr = blankCanner(target);        
         String[] retStr = tempStr.split(" ");
         int[] retVal = new int[SIZEMAX];
 
@@ -359,6 +400,8 @@ public class SplashParser {
             if (tempChars[trace] == ' ' || tempChars[trace] == '#') {
                 if (tempChars[trace+1] == ' ') {
                     tempChars[trace+1] = '#';
+                    // Temporary Ad-hoc, As instructed, triggering canning sequence will cause error instead.
+                    parseError("inFault");
                 }
             }
             trace = trace + 1;
@@ -408,15 +451,18 @@ public class SplashParser {
                   System.out.println("Invalid Penalty Error");
                   System.out.println("Input is neither natural number or 0.");
                   SplashOutput.printError(6);
+              } else if (erCode.contentEquals("inFault")) {
+                  System.out.println("Error while parsing input file");
               }
               else
               {
                   System.out.println("Unknown error has occured during input parsing. Aborting.");
               }
+              systemStatePrinter(erCode);
               System.exit(0);
           }
 
-    public void systemStatePrinter() {
+    public void systemStatePrinter(String erCode) {
         if (setName == true) {
             System.out.println("Set Name: true");
         }
@@ -438,6 +484,7 @@ public class SplashParser {
         if (setCollision == true) {
             System.out.println("Set Collision: true");
         }
+        System.out.println("Error Occured: " + erCode);
         System.out.println("Cycle: " + execCycle);
         printMe();
     }
