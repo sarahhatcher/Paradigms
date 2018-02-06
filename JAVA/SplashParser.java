@@ -396,6 +396,7 @@ public class SplashParser {
               else
               {
                   System.out.println("Unknown error has occured during input parsing. Aborting.");
+                  SplashOutput.printError(1);
               }
               System.exit(0);
           }
