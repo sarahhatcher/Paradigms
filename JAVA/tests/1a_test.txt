@@ -1,0 +1,32 @@
+Name:
+Basic1
+
+forced partial assignment:
+(2,B)
+(8,H)
+ 
+forbidden machine:
+(6,D)
+(3,F)
+
+too-near tasks:
+(A,G)
+(C,D)
+
+machine penalties:
+
+0 1 2 3 4 5 6 9 
+1 2 3 4 5 6 7 8
+2 3 4 5 6 7 7 9
+3 4 5 6 7 8 9 5
+9 5 6 7 8 9 5 3
+5 6 7 8 9 2 1 4 
+6 7 8 9 5 1 2 3
+7 8 9 5 4 9 9 9
+
+too-near penalities
+(A,B,5)
+(B,C,2)
+(C,D,3)
+(D,E,4)
+(E,F,5)
