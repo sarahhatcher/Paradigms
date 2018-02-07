@@ -21,7 +21,8 @@ public class SplashParser {
     private boolean setCollision = false;
     private int execCycle = 0; //Debugging variable.
     private int lineCounter = 0; //lineCounter tracks the number of lines that have been parsed for machine penalty. If it isn't exactly 8 after MP is processed, throw error.
-
+    private boolean expectFlags = true;
+    
     public static final byte ASCII_INT_CHAR_FIX = -48;
     public static final byte ASCII_CAP_CHAR_FIX = -65;
 
@@ -43,7 +44,10 @@ public class SplashParser {
 	    //May need to update version to include exception handling for non-ascii input (check with prof if need to catch exception for input not in ascii --> outside of parser scope)
 
 	    //Create new fileReader with INPUTNAME
-	    ////Create new BufferedReader
+        ////Create new BufferedReader
+            if (!inputName.endsWith(".txt")) {
+                inputName = inputName + ".txt";
+            }
             fr = new FileReader(inputName);
             br = new BufferedReader(fr);
 
@@ -53,21 +57,32 @@ public class SplashParser {
             byte verify;
 	    //Current data structures before matching to Richards output
 
-	    // Master Marrix initiallization, two 8x8 matrix, 0 for logic 1 for task.
+	        // Master Marrix initiallization, two 8x8 matrix, 0 for logic 1 for task.
             masterGrid = new int[SIZEMAX][SIZEMAX][2];
 
-            while (tempStr != null) {
-                // Verifies if the line read is not the empty line.
-                tempStr = tempStr.trim();
 
-                //If the processed string is not empty then read the first character
+            while (tempStr != null) {
+
+                // If the processed string is not empty then read the first character.
+                // In case newline was processed, set flag to expect either another newline, or flag setting text.
                 if (!tempStr.contentEquals("")) {
                     verify = (byte) tempStr.charAt(0);
                 } else {
                     verify = PLACEHOLDER; // If it is, assign null ASCII text.
+                    expectFlags = true;
                 }
 
-                if (tempStr.startsWith("(") && tempStr.endsWith(")")) // If the line starts with bracket
+                // Clears out whitespace from start, and end of the text.
+                tempStr = tempStr.trim();
+
+                // If the line starts with english letter
+                if (((verify > ASCII_LOWER_RANGE[0]) && (verify < ASCII_LOWER_RANGE[1])) || ((verify > ASCII_UPPER_RANGE[0]) && (verify < ASCII_UPPER_RANGE[1]))) {
+                    if (!expectFlags && !setName) {
+                        parseError("inFault");
+                    } else {
+                        flagProcessor(tempStr);
+                    }
+                } else if (tempStr.startsWith("(") && tempStr.endsWith(")")) // If the line starts with bracket
                 {
                     // FPA, FM, TNT, TNP takes in "(int, char)" as input. As such, it detects '('.
                     int[] processedString = pairProcessor(tempStr.substring(1, tempStr.length()-1));
@@ -75,7 +90,7 @@ public class SplashParser {
                 }
                 else if ((verify > ASCII_INT_RANGE[0]) && (verify < ASCII_INT_RANGE[1])) // If the line starts with number
                 {
-                    if (setMP == true) {
+                    if (setMP == true && lineCounter < SIZEMAX) {
                         // If a line starts with number it is presumed that it is the line for Machine Penalty.
                         int[] tempValue = lineProcessor(tempStr);
                         for (byte n = 0; n < SIZEMAX; n++)
@@ -94,27 +109,36 @@ public class SplashParser {
                     } else {
                         parseError("intCrash");
                     }
-                }
-		        // If the line starts with english letter
-                else if (((verify > ASCII_LOWER_RANGE[0]) && (verify < ASCII_LOWER_RANGE[1])) || ((verify > ASCII_UPPER_RANGE[0]) && (verify < ASCII_UPPER_RANGE[1]))) {
-                    flagProcessor(tempStr);
-                }
-                else if (verify != PLACEHOLDER) {
-                    // If no criteria is met, but has some ASCII characters, fault
-                    if (setName == true) {
-                        setName = false;
+                } else if (verify != PLACEHOLDER) {
+                    // Three conditions: If name is supposed to be set, and gets some string, presume that was the name.
+                    // If Name was already set, but still gets something, fault.
+                    // Otherwise, it must have been line consist entirely of whitespaces. Skip.
+                    if (!tempStr.contentEquals("")) {
+                        if (setName == true) {
+                            setName = false;
+                        } else {
+                            parseError("inFault");
+                        }
+                    } else {
+                        expectFlags = true;
                     }
-                    else if (!tempStr.contentEquals("")) {
-                        parseError("inFault");
-                    }
                 }
+
+                // This line will check if any valid line was processed, in that case, reset newline seeker for flags.
+                if (!tempStr.contentEquals("")) {
+                    expectFlags = false;
+                }
+
                 // readLine here, so EOL can be terminated correctly.
                 tempStr = br.readLine();
                 execCycle++;
             }
 
             // Handler for collision caused no-solution matrix is moved outside of actual parsing process.
-            if (setCollision == true) {
+            // This section also checks if Too-Near-Penalty was attempted to be parsed.
+            if (setTNP == false) {
+                parseError("inFault");
+            } else if (setCollision == true) {
                 parseError("collision");
             }
 
@@ -273,8 +297,8 @@ public class SplashParser {
         retVal[1] = (int) retStr[1].charAt(0);
         retVal[1] = retVal[1] + ASCII_CAP_CHAR_FIX;
         if (retStr.length > 2) {
-            // If there are more than three variable discovered, it is TNP, process penalty.
-        	//If program tries to process more than two entry when TNP is not being processed,
+            // If there are more than three variable discovered, it is TNP, process penalty. 
+        	//If program tries to process more than two entry when TNP is not being processed, 
         	//or more than 3 argument is passed, trigger inFault. %DEAD CODE
             if (setTNP == true && retStr.length == 3) {
                 retVal[2] = penaltyVerify(retStr[2]);
@@ -339,6 +363,7 @@ public class SplashParser {
             if (tempChars[trace] == ' ' || tempChars[trace] == '#') {
                 if (tempChars[trace+1] == ' ') {
                     tempChars[trace+1] = '#';
+                    parseError("inFault");
                 }
             }
             trace = trace + 1;
@@ -388,6 +413,8 @@ public class SplashParser {
                   System.out.println("Invalid Penalty Error");
                   System.out.println("Input is neither natural number or 0.");
                   SplashOutput.printError(6);
+              }else if (erCode.contentEquals("inFault")) {
+                  System.out.println("Error while parsing input file");
               }
               else
               {
