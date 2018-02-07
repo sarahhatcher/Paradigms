@@ -1,37 +1,6 @@
 import java.io.*;
 import java.util.*;
 
-// v0.4: Output matrix is now masterGrid[][][].
-//       Error handling has been altered: Collision will be no longer processed during parsing.
-//       FPA is no longer pre-calculated. It will be assigned normally. ASSIGN constant is kept for the purpose of detecting collision.
-// v0.5: Empty space parsing is now flexible, it will process correctly regardless of number of empty space between.
-//       WARNING: Above solution handles this in O(mn), hopefully this algorithm is fast enough.
-//       Bracket exception cases from 0.4v has been solved, now it will correctly recognize if brackets are correctly set.
-//       Pair processor now tests if number of argument being passed is correct for currently processing sections.
-// v0.9a:
-//      Duplicate entry detection has been reverted.
-//      Flag text processor now checks if last line was empty line.
-//      FPA and FM will no longer simply assign (Task,Task) pair input as though it is a valid input.
-//      Actual error processor for infault has been added
-//      Line Processor no longer crashes for extra row during MP
-// v0.9b:
-//      Duplicate flag name detection now works again.
-// TODO:
-//      For some reason, parseError() is directly calling method from uninitialized SplashOutput, this should be fixed.
-//      There has to be at least one newline before flag text is processed.
-//      Remove Duplicate entry inFault.
-// Difference vs. 0.5v:
-//      Multiple white space error correction implemented.
-//      Flag setting order is now strict.
-//      Duplicate Flag is no longer allowed.
-//      Improved file name handling
-//      Strict whitespace policy implemented, excepting EOL whitespace.
-//      Newline previous to flag text is now checked.
-//      FPA / FM (task,task) is no longer allowed.
-//      Error processor now triggers actual infault.
-//      Line processor now handles excess row.
-
-
 public class SplashParser {
 
     private BufferedReader br;
