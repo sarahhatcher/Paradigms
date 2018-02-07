@@ -16,8 +16,8 @@ import java.util.*;
 //      Line Processor no longer crashes for extra row during MP
 // v0.9b:
 //      Duplicate flag name detection now works again.
-// v0.9c:
 //      More error dialogues
+//      Separates invalid inputs on machine and task.
 // TODO:
 //      For some reason, parseError() is directly calling method from uninitialized SplashOutput, this should be fixed.
 //      There has to be at least one newline before flag text is processed.
@@ -317,7 +317,7 @@ public class SplashParser {
 
         // Check if any extranous whitespace has been introduced.
         for (byte i=0; i < retStr.length; i++) {
-            if (retStr[i].indexOf("#") != -1) {
+            if (retStr[i].length() > 1) {
                 parseError("inFault");
             } 
         }
@@ -331,7 +331,7 @@ public class SplashParser {
         } catch (NumberFormatException e) {
             // If it fails, it must be task or invalid, process it as though it is task
             retVal[0] = (int) retStr[0].charAt(0);
-            if ((setFPA || setFM) || ((verify > ASCII_UPPER_RANGE[0]) && (verify < ASCII_UPPER_RANGE[1]))) {
+            if ((setFPA || setFM) || ((retVal[0] > ASCII_UPPER_RANGE[0]) && (retVal[0] < ASCII_UPPER_RANGE[1]))) {
                 parseError("inFault");
             }
             retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
@@ -341,7 +341,7 @@ public class SplashParser {
 
         // Second input is always task.
         retVal[1] = (int) retStr[1].charAt(0);
-        if ((verify > ASCII_UPPER_RANGE[0]) && (verify < ASCII_UPPER_RANGE[1])) {
+        if ((retVal[1] > ASCII_UPPER_RANGE[0]) && (retVal[1] < ASCII_UPPER_RANGE[1])) {
             retVal[1] = retVal[1] + ASCII_CAP_CHAR_FIX;
         } else {
             parseError("inFault");
