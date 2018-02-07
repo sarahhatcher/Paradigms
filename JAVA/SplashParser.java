@@ -207,17 +207,7 @@ public class SplashParser {
         }
       }
       System.out.println();
-        /*System.out.println("Initiating Debug Output.");
-
-        for (byte i=0; i < 2; i++) {
-            for (byte j=0; j < SIZEMAX; j++) {
-                for (byte k=0; k < SIZEMAX; k++) {
-                    System.out.print("[" + masterGrid[j][k][i] + "]");
-                }
-                System.out.println("");
-            }
-            System.out.println("");
-        }*/
+      
     }
 
     // This function is used to assign pair wise input (FPA, FM, TNT, TNP) into appropriate data structure.
@@ -311,7 +301,7 @@ public class SplashParser {
     }
 
     // Ask if whitespace counts as possible task input.
-    //
+    // 
 
     // This function processes string in form of "(machine,task)", "(task,task)", or "(machine,task,penalty)" and processes into an array for data structure.
     private int[] pairProcessor(String tempStr) {
@@ -321,7 +311,7 @@ public class SplashParser {
 
         // Check if any extranous whitespace has been introduced.
         // Catching null text has been moved to general error catching.
-
+        
         // This should be discontinued.
         for (byte i=0; i < retStr.length; i++) {
             if (retStr[i].indexOf("#") != -1) {
@@ -384,18 +374,15 @@ public class SplashParser {
     // Handles line of integer for MP.
     private int[] lineProcessor(String target) {
         // Adjust the line such that it is in predictable pattern format of emptyspace-number cycle.
-        String tempStr = blankCanner(target);
+        String tempStr = blankCanner(target);        
         String[] retStr = tempStr.split(" ");
         int[] retVal = new int[SIZEMAX];
 
         // If there are more or less than 8 entries, crash.
-        if (retStr.length < SIZEMAX) {
+        if (retStr.length != SIZEMAX) {
             parseError("intCrash");
         }
-        else if(retStr.length > SIZEMAX){
-          parseError("inFault");
-        }
-
+        
         for (byte i=0; i < SIZEMAX; i++) {
             retVal[i] = penaltyVerify(retStr[i]);
         }
@@ -482,8 +469,8 @@ public class SplashParser {
                   System.out.println("Invalid Penalty Error");
                   System.out.println("Input is neither natural number or 0.");
                   SplashOutput.printError(6);
-              }
-              else if (erCode.contentEquals("inFault"))
+              } 
+              else if (erCode.contentEquals("inFault")) 
               {
                   System.out.println("Error while parsing input file");
                   SplashOutput.printError(1);
