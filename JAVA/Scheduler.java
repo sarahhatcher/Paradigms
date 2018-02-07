@@ -35,6 +35,7 @@
 
 public class Scheduler
 {
+    static String outputFile;
 	//
     public static void main (String[] args)
     {
@@ -51,7 +52,7 @@ public class Scheduler
             System.out.println("Unhandled General Error");
             SplashOutput.printError(1);
         }
-
+        outputFile = args[1];
         
 
         splashSearch searchInstance = new splashSearch(pntArray);
