@@ -8,30 +8,28 @@ import java.util.*;
 //       WARNING: Above solution handles this in O(mn), hopefully this algorithm is fast enough.
 //       Bracket exception cases from 0.4v has been solved, now it will correctly recognize if brackets are correctly set.
 //       Pair processor now tests if number of argument being passed is correct for currently processing sections.
-// v0.6:
-//      SplashParser now parses newline strictly.
-//      Flag texts are now properly canned for any extra whitespace before content is checked.
-//      SplashParser now strictly verifies the order of the flags set to match correct processing order. (Name -> FPA -> FM -> TNT -> MP -> TNP.) Otherwise, 'inFault' triggers.
-//      int fpaPenalty is removed, as it is no longer used.
-//      masterGrid is now private once again, it is unknown why it was public in the first place. Only debug methods and constant variables should be directly accesible.
-// v0.7:
-//      Altered strict line parsing policy, Any number of newline should be allowed when newline should be allowed.
-//      Improved file name handling, it will now recognize if parameter typed file extension (.txt) or not.
-// v0.8:
-//      Strict line policy has been rolledback entirely. Any number of empty new line should be allowed indiscrimately.
-//      Strict whitespace policy has been implemented, exception only for EOL. Which includes line exclusively containing only whitespaces.
-//      Duplicate Flag text is no longer allowed.
-//      Duplicate entry in FPA, FM, and TNT now triggers inFault. (Or respective error if required.)
-// v0.9:
+// v0.9a:
 //      Duplicate entry detection has been reverted.
 //      Flag text processor now checks if last line was empty line.
 //      FPA and FM will no longer simply assign (Task,Task) pair input as though it is a valid input.
 //      Actual error processor for infault has been added
 //      Line Processor no longer crashes for extra row during MP
+// v0.9b:
+//      Duplicate flag name detection now works again.
 // TODO:
 //      For some reason, parseError() is directly calling method from uninitialized SplashOutput, this should be fixed.
 //      There has to be at least one newline before flag text is processed.
 //      Remove Duplicate entry inFault.
+// Difference vs. 0.5v:
+//      Multiple white space error correction implemented.
+//      Flag setting order is now strict.
+//      Duplicate Flag is no longer allowed.
+//      Improved file name handling
+//      Strict whitespace policy implemented, excepting EOL whitespace.
+//      Newline previous to flag text is now checked.
+//      FPA / FM (task,task) is no longer allowed.
+//      Error processor now triggers actual infault.
+//      Line processor now handles excess row.
 
 
 public class SplashParser {
@@ -50,6 +48,7 @@ public class SplashParser {
     private boolean setMP = false;
     private boolean setTNP = false;
     private boolean setCollision = false;
+    private byte flagCounter = 0;
     private int lineCounter = 0; // lineCounter tracks the number of lines that have been parsed for machine penalty. If it isn't exactly 8 after MP is processed, throw error.
     private boolean expectFlags = true;
 
@@ -100,7 +99,7 @@ public class SplashParser {
                 if (!tempStr.contentEquals("")) {
                     verify = (byte) tempStr.charAt(0);
                 } else {
-                    verify = PLACEHOLDER; // If it is, assign null ASCII text.
+                    verify = PLACEHOLDER; // If it is, assign null ASCII text, and trigger flag expectation.
                     expectFlags = true;
                 }
 
@@ -256,17 +255,14 @@ public class SplashParser {
     // This function handles flags for data assignment and error checking. It will also check if invalid strings are in the input.
     // Potential fringe case --> if line being parsed starts with a bracket it will be processed and trigger a different error instead of "error while parsing input file"
 
-    private void flagProcessor(String tempStr) {
-        // Whitespaces are no longer canned, as instructed. Blankcanner now simply checks for extra whitespaces.
-        String flagText = blankCanner(tempStr);
-
+    private void flagProcessor(String flagText) {
 	    // Check format of initial label
-        if (flagText.equals("Name:"))
+        if (flagText.equals("Name:") && flagCounter == 0)
         {
             setName = true;
             firstFlag = true;
         }
-        else if (flagText.equals("forced partial assignment:") && firstFlag)
+        else if (flagText.equals("forced partial assignment:") && firstFlag && flagCounter == 1)
         {
             // Missing Name input check
             if (setName == true) {
@@ -274,22 +270,22 @@ public class SplashParser {
             }
             setFPA = true;
         }
-        else if (flagText.equals("forbidden machine:") && setFPA)
+        else if (flagText.equals("forbidden machine:") && setFPA && flagCounter == 2)
         {
             setFM = true;
             setFPA = false;
         }
-        else if (flagText.equals("too-near tasks:") && setFM)
+        else if (flagText.equals("too-near tasks:") && setFM && flagCounter == 3)
         {
             setTNT = true;
             setFM = false;
         }
-        else if (flagText.equals("machine penalties:") && setTNT)
+        else if (flagText.equals("machine penalties:") && setTNT && flagCounter == 4)
         {
             setMP = true;
             setTNT = false;
         }
-        else if (flagText.equals("too-near penalities") && setMP)
+        else if (flagText.equals("too-near penalities") && setMP && flagCounter == 5)
         {
             if (lineCounter != SIZEMAX) {
                 // Correct MP input is always 8 lines.
@@ -303,10 +299,12 @@ public class SplashParser {
             // Checks for Name input for later ASCII index.
             if (setName == true && setFPA == false) {
                 setName = false;
+                flagCounter--;
             } else {
                 parseError("inFault");
             }
         }
+        flagCounter++;
     }
 
     // This function processes string in form of "(machine,task)", "(task,task)", or "(machine,task,penalty)" and processes into an array for data structure.
