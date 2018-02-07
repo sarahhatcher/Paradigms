@@ -1,7 +1,6 @@
 import java.io.*;
 import java.util.*;
 
-
 public class SplashParser {
 
     private BufferedReader br;
@@ -19,6 +18,7 @@ public class SplashParser {
     private boolean setMP = false;
     private boolean setTNP = false;
     private boolean setCollision = false;
+    private int flagsCounter = 0;
     private int execCycle = 0; //Debugging variable.
     private int lineCounter = 0; //lineCounter tracks the number of lines that have been parsed for machine penalty. If it isn't exactly 8 after MP is processed, throw error.
     private boolean expectFlags = true;
@@ -223,36 +223,42 @@ public class SplashParser {
 
     // This function handles flags for data assignment and error checking. It will also check if invalid strings are in the input.
     // Potential fringe case --> if line being parsed starts with a bracket it will be processed and trigger a different error instead of "error while parsing input file"
-
+    
     private void flagProcessor(String flagText) {
 	//Check format of initial label
-        if (flagText.equals("Name:"))
+    	
+        if (flagText.equals("Name:") && flagsCounter ==0)
         {
             setName = true;
+            flagsCounter++;
         }
-        else if (flagText.equals("forced partial assignment:"))
+        else if (flagText.equals("forced partial assignment:") && flagsCounter ==1)
         {
             // Missing Name input check
             if (setName == true) {
                 parseError("inFault");
             }
             setFPA = true;
+            flagsCounter++;
         }
-        else if (flagText.equals("forbidden machine:"))
+        else if (flagText.equals("forbidden machine:") && flagsCounter ==2)
         {
             setFM = true;
             setFPA = false;
+            flagsCounter++;
         }
-        else if (flagText.equals("too-near tasks:"))
+        else if (flagText.equals("too-near tasks:") && flagsCounter ==3)
         {
             setTNT = true;
             setFM = false;
+            flagsCounter++;
         }
-        else if (flagText.equals("machine penalties:"))
+        else if (flagText.equals("machine penalties:") && flagsCounter ==4)
         {
             setMP = true;
+            flagsCounter++;
         }
-        else if (flagText.equals("too-near penalities"))
+        else if (flagText.equals("too-near penalities")&& flagsCounter ==5)
         {
             if (lineCounter != SIZEMAX) {
                 // Correct MP input is always 8 lines.
