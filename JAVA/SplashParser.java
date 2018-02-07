@@ -6,11 +6,10 @@ public class SplashParser {
     private BufferedReader br;
     private FileReader fr;
 
-    public int[][][] masterGrid; // General Matrix, at third place, 0 is used for Logic Matrix, and 1 is used for Task Matrix.
-    private int fpaPenalty; // Total cumulative penalty from forced partial assignment.
-    private int minPenalty; // To end Parser Earlier
+    private int[][][] masterGrid; // General Matrix, at third place, 0 is used for Logic Matrix, and 1 is used for Task Matrix.
     //Boolean for each step of parsing string
     //Set flag as we parse
+    private boolean firstFlag = false; // Checks if name was ever processed by the SplashParser.
     private boolean setName = false; //True when name is not in correct format -->name::
     private boolean setFPA = false; //Check if structure remains--> no error
     private boolean setFM = false;
@@ -18,11 +17,12 @@ public class SplashParser {
     private boolean setMP = false;
     private boolean setTNP = false;
     private boolean setCollision = false;
-    private int flagsCounter = 0;
-    private int execCycle = 0; //Debugging variable.
-    private int lineCounter = 0; //lineCounter tracks the number of lines that have been parsed for machine penalty. If it isn't exactly 8 after MP is processed, throw error.
+    private byte flagCounter = 0;
+    private int lineCounter = 0; // lineCounter tracks the number of lines that have been parsed for machine penalty. If it isn't exactly 8 after MP is processed, throw error.
     private boolean expectFlags = true;
-    
+
+    private int execCycle = 0; //Debugging variable.
+
     public static final byte ASCII_INT_CHAR_FIX = -48;
     public static final byte ASCII_CAP_CHAR_FIX = -65;
 
@@ -68,7 +68,7 @@ public class SplashParser {
                 if (!tempStr.contentEquals("")) {
                     verify = (byte) tempStr.charAt(0);
                 } else {
-                    verify = PLACEHOLDER; // If it is, assign null ASCII text.
+                    verify = PLACEHOLDER; // If it is, assign null ASCII text, and trigger flag expectation.
                     expectFlags = true;
                 }
 
@@ -173,8 +173,8 @@ public class SplashParser {
         }
       }
       System.out.println();
-        /*Syste
         /*System.out.println("Initiating Debug Output.");
+
         for (byte i=0; i < 2; i++) {
             for (byte j=0; j < SIZEMAX; j++) {
                 for (byte k=0; k < SIZEMAX; k++) {
@@ -219,94 +219,94 @@ public class SplashParser {
                 parseError("fpa");
             }
         }
-    }
+}
 
     // This function handles flags for data assignment and error checking. It will also check if invalid strings are in the input.
     // Potential fringe case --> if line being parsed starts with a bracket it will be processed and trigger a different error instead of "error while parsing input file"
-    
+
     private void flagProcessor(String flagText) {
-	//Check format of initial label
-    	
-        if (flagText.equals("Name:") && flagsCounter ==0)
+	    // Check format of initial label
+        if (flagText.equals("Name:") && flagCounter == 0)
         {
             setName = true;
-            flagsCounter++;
+            firstFlag = true;
         }
-        else if (flagText.equals("forced partial assignment:") && flagsCounter ==1)
+        else if (flagText.equals("forced partial assignment:") && firstFlag && flagCounter == 1)
         {
             // Missing Name input check
             if (setName == true) {
                 parseError("inFault");
             }
             setFPA = true;
-            flagsCounter++;
         }
-        else if (flagText.equals("forbidden machine:") && flagsCounter ==2)
+        else if (flagText.equals("forbidden machine:") && setFPA && flagCounter == 2)
         {
             setFM = true;
             setFPA = false;
-            flagsCounter++;
         }
-        else if (flagText.equals("too-near tasks:") && flagsCounter ==3)
+        else if (flagText.equals("too-near tasks:") && setFM && flagCounter == 3)
         {
             setTNT = true;
             setFM = false;
-            flagsCounter++;
         }
-        else if (flagText.equals("machine penalties:") && flagsCounter ==4)
+        else if (flagText.equals("machine penalties:") && setTNT && flagCounter == 4)
         {
             setMP = true;
-            flagsCounter++;
+            setTNT = false;
         }
-        else if (flagText.equals("too-near penalities")&& flagsCounter ==5)
+        else if (flagText.equals("too-near penalities") && setMP && flagCounter == 5)
         {
             if (lineCounter != SIZEMAX) {
                 // Correct MP input is always 8 lines.
                 parseError("intCrash");
             }
             setTNP = true;
-            setTNT = false;
+            setMP = false;
         }
         else
         {
             // Checks for Name input for later ASCII index.
             if (setName == true && setFPA == false) {
                 setName = false;
+                flagCounter--;
             } else {
                 parseError("inFault");
             }
         }
+        flagCounter++;
     }
 
     // This function processes string in form of "(machine,task)", "(task,task)", or "(machine,task,penalty)" and processes into an array for data structure.
     private int[] pairProcessor(String tempStr) {
-        // Remove all empty spaces, then split based on comma.
-        String[] retStr = tempStr.replace(" ", "").split(",");
+        // Counts all whitespaces, then split based on comma.
+        String[] retStr = tempStr.replace(" ", "#").split(",");
         int[] retVal = new int[retStr.length];
+
+        // Check if any extranous whitespace has been introduced.
+        for (byte i=0; i < retStr.length; i++) {
+            if (retStr[i].indexOf("#") != -1) {
+                parseError("inFault");
+            } 
+        }
 
         try {
             // Try to parse the machine (int) input.
             retVal[0] = Integer.parseInt(retStr[0]) - 1;
-            if(setTNT == true || setTNP == true) {
-            	parseError("inFault");
-            }
         } catch (NumberFormatException e) {
-        		if(setFPA == true || setFM == true) {
-        			parseError("inFault");
-        		}
-            // If it fails, it must be task or invalid, process it as though it is task.
+            // If it fails, it must be task or invalid, process it as though it is task
             retVal[0] = (int) retStr[0].charAt(0);
-            retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
+            // Just checks if FPA or FM is set at the moment... That should not take two task as input.
+            if (!setFPA && !setFM) {
+                retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
+            }
         }
 
         // Second input is always task.
         retVal[1] = (int) retStr[1].charAt(0);
         retVal[1] = retVal[1] + ASCII_CAP_CHAR_FIX;
         if (retStr.length > 2) {
-            // If there are more than three variable discovered, it is TNP, process penalty. 
-        	//If program tries to process more than two entry when TNP is not being processed, 
-        	//or more than 3 argument is passed, trigger inFault. %DEAD CODE
-            if (setTNP == true && retStr.length == 3) {
+            // If there are more than three variable discovered, it is TNP, process penalty. If program tries to process more than two entry when TNP is not being processed, or more than 3 argument is passed, trigger inFault.
+            if (setTNP = true && retStr.length == 3) {
                 retVal[2] = penaltyVerify(retStr[2]);
             } else {
                 parseError("inFault");
@@ -327,7 +327,7 @@ public class SplashParser {
     // Handles line of integer for MP.
     private int[] lineProcessor(String target) {
         // Adjust the line such that it is in predictable pattern format of emptyspace-number cycle.
-        String tempStr = blankCanner(target);
+        String tempStr = blankCanner(target);        
         String[] retStr = tempStr.split(" ");
         int[] retVal = new int[SIZEMAX];
 
@@ -369,6 +369,7 @@ public class SplashParser {
             if (tempChars[trace] == ' ' || tempChars[trace] == '#') {
                 if (tempChars[trace+1] == ' ') {
                     tempChars[trace+1] = '#';
+                    // Temporary Ad-hoc, As instructed, triggering canning sequence will cause error instead.
                     parseError("inFault");
                 }
             }
@@ -419,14 +420,14 @@ public class SplashParser {
                   System.out.println("Invalid Penalty Error");
                   System.out.println("Input is neither natural number or 0.");
                   SplashOutput.printError(6);
-              }else if (erCode.contentEquals("inFault")) {
+              } else if (erCode.contentEquals("inFault")) {
                   System.out.println("Error while parsing input file");
               }
               else
               {
                   System.out.println("Unknown error has occured during input parsing. Aborting.");
-                  SplashOutput.printError(1);
               }
+              systemStatePrinter();
               System.exit(0);
           }
 
