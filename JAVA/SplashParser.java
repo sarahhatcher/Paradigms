@@ -337,10 +337,9 @@ public class SplashParser {
 
         try {
             // Try to parse the machine (int) input.
+            retVal[0] = Integer.parseInt(retStr[0]) - 1;
             if (setTNT || setTNP) {
-                retVal[0] = PLACEHOLDER;
-            } else {
-                retVal[0] = Integer.parseInt(retStr[0]) - 1;
+                retVal[0] = 81;
             }
         } catch (NumberFormatException e) {
             // If it fails, it must be task or invalid, process it as though it is task
