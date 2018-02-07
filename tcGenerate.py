@@ -160,7 +160,7 @@ for i in range(y):
 
 # Prints TNP
 
-print("\ntoo-near penalities:")
+print("\ntoo-near penalities")
 for temp in tNP:
     a,b,c = (str(temp[0]), str(temp[1]), str(temp[2]))
     print("(" + a + "," + b + "," + c + ")")
