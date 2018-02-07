@@ -1,3 +1,4 @@
+
 1name_error: parser error name on two lines.
 8diag: 9 penalties
 8forbid: No valid sol
@@ -10,7 +11,7 @@ forcedforbid: No valid solution
 forced_forbid_parser: parser error
 forbid_wrong: parser error
 forced_wrong: parser error
-less_col: parser error 
+less_col: parser error
 less_row: parser error
 minimalisticexample: 8 penalty
 missing_title: parser error ??? (we currently return a parser error, is that correct)
