@@ -326,7 +326,7 @@ public class SplashParser {
         for (byte i=0; i < retStr.length; i++) {
             if (retStr[i].indexOf("#") != -1) {
                 parseError("inFault");
-            } else if (retStr[i].length() > 1 && i < 3) {
+            } else if (retStr[i].length() > 1 && i < 2) {
                 if (!setTNP) {
                     parseError("nullMT");
                 } else {
@@ -337,7 +337,11 @@ public class SplashParser {
 
         try {
             // Try to parse the machine (int) input.
-            retVal[0] = Integer.parseInt(retStr[0]) - 1;
+            if (setTNT || setTNP) {
+                retVal[0] = PLACEHOLDER;
+            } else {
+                retVal[0] = Integer.parseInt(retStr[0]) - 1;
+            }
         } catch (NumberFormatException e) {
             // If it fails, it must be task or invalid, process it as though it is task
             retVal[0] = (int) retStr[0].charAt(0);
