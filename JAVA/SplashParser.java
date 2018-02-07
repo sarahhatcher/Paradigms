@@ -338,15 +338,13 @@ public class SplashParser {
         try {
             // Try to parse the machine (int) input.
             retVal[0] = Integer.parseInt(retStr[0]) - 1;
-            if (setTNT || setTNP) {
-                parseError("inFault");
-            }
         } catch (NumberFormatException e) {
             // If it fails, it must be task or invalid, process it as though it is task
             retVal[0] = (int) retStr[0].charAt(0);
-            retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
+            if (setTNT || setTNP) {
+                retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
+            }
             // Just checks if FPA or FM is set at the moment... That should not take two task as input.
-            
         }
 
         // Second input is always task.
