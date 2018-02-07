@@ -18,6 +18,8 @@ import java.util.*;
 //      Duplicate flag name detection now works again.
 //      More error dialogues
 //      Separates invalid inputs on machine and task.
+// v0.9c:
+//      Fixes using applying multi-letter tasks or multi-letter machines.
 // TODO:
 //      For some reason, parseError() is directly calling method from uninitialized SplashOutput, this should be fixed.
 //      There has to be at least one newline before flag text is processed.
@@ -39,7 +41,7 @@ public class SplashParser {
     private BufferedReader br;
     private FileReader fr;
 
-    private int[][][] masterGrid; // General Matrix, at third place, 0 is used for Logic Matrix, and 1 is used for Task Matrix.
+    public int[][][] masterGrid; // General Matrix, at third place, 0 is used for Logic Matrix, and 1 is used for Task Matrix.
     //Boolean for each step of parsing string
     //Set flag as we parse
     private boolean firstFlag = false; // Checks if name was ever processed by the SplashParser.
@@ -317,7 +319,7 @@ public class SplashParser {
 
         // Check if any extranous whitespace has been introduced.
         for (byte i=0; i < retStr.length; i++) {
-            if (retStr[i].length() > 1) {
+            if (retStr[i].indexOf("#") != -1) {
                 parseError("inFault");
             } 
         }
@@ -331,7 +333,7 @@ public class SplashParser {
         } catch (NumberFormatException e) {
             // If it fails, it must be task or invalid, process it as though it is task
             retVal[0] = (int) retStr[0].charAt(0);
-            if ((setFPA || setFM) || ((retVal[0] > ASCII_UPPER_RANGE[0]) && (retVal[0] < ASCII_UPPER_RANGE[1]))) {
+            if ((setFPA || setFM) || ((retVal[0] < ASCII_UPPER_RANGE[0]) || (retVal[0] > ASCII_UPPER_RANGE[1]))) {
                 parseError("inFault");
             }
             retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
@@ -427,6 +429,8 @@ public class SplashParser {
 
     // Catch no name error here by ordering of errors and if statements checking setName status when later error triggers.
     private void parseError(String erCode) {
+
+                systemStatePrinter();
               if (erCode.contentEquals("fpa"))
               {
                   System.out.println("Partial Assignment Error");
@@ -466,7 +470,7 @@ public class SplashParser {
               {
                   System.out.println("Unknown error has occured during input parsing. Aborting.");
               }
-              systemStatePrinter();
+
               System.exit(0);
           }
 
