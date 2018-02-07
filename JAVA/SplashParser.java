@@ -19,6 +19,9 @@ import java.io.*;
 //      Separates invalid inputs on machine and task.
 // v0.9c:
 //      Fixes using applying multi-letter tasks or multi-letter machines.
+// v1.0:
+//      Should handle, at this point, general. First working version.
+// v1.0a
 // TODO:
 //      For some reason, parseError() is directly calling method from uninitialized SplashOutput, this should be fixed.
 //      There has to be at least one newline before flag text is processed.
@@ -307,6 +310,9 @@ public class SplashParser {
         flagCounter++;
     }
 
+    // Ask if whitespace counts as possible task input.
+    //
+
     // This function processes string in form of "(machine,task)", "(task,task)", or "(machine,task,penalty)" and processes into an array for data structure.
     private int[] pairProcessor(String tempStr) {
         // Counts all whitespaces, then split based on comma.
@@ -315,11 +321,17 @@ public class SplashParser {
 
         // Check if any extranous whitespace has been introduced.
         // Catching null text has been moved to general error catching.
+
+        // This should be discontinued.
         for (byte i=0; i < retStr.length; i++) {
-            if ((retStr[i].indexOf("#") != -1) || retStr[i].length() == 0) {
+            if (retStr[i].indexOf("#") != -1) {
                 parseError("inFault");
-            } else if (retStr[i].length() > 1 && i < 3) {
-                parseError("inFault");
+            } else if (retStr[i].length() > 1 && i < 2) {
+                if (!setTNP) {
+                    parseError("nullMT");
+                } else {
+                    parseError("nullT");
+                }
             }
         }
 
@@ -327,27 +339,21 @@ public class SplashParser {
             // Try to parse the machine (int) input.
             retVal[0] = Integer.parseInt(retStr[0]) - 1;
             if (setTNT || setTNP) {
-                parseError("inFault");
+                retVal[0] = 81;
             }
         } catch (NumberFormatException e) {
             // If it fails, it must be task or invalid, process it as though it is task
             retVal[0] = (int) retStr[0].charAt(0);
-            if ((setFPA || setFM) || ((retVal[0] < ASCII_UPPER_RANGE[0]) || (retVal[0] > ASCII_UPPER_RANGE[1]))) {
-                parseError("inFault");
+            if (setTNT || setTNP) {
+                retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
             }
-            retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
             // Just checks if FPA or FM is set at the moment... That should not take two task as input.
-            
         }
 
         // Second input is always task.
         retVal[1] = (int) retStr[1].charAt(0);
-        if ((retVal[1] > ASCII_UPPER_RANGE[0]) && (retVal[1] < ASCII_UPPER_RANGE[1])) {
-            retVal[1] = retVal[1] + ASCII_CAP_CHAR_FIX;
-        } else {
-            parseError("inFault");
-        }
-        if (retStr.length > 2) {
+        retVal[1] = retVal[1] + ASCII_CAP_CHAR_FIX;
+        if (retStr.length > 2 || setTNP) {
             // If there are more than three variable discovered, it is TNP, process penalty. If program tries to process more than two entry when TNP is not being processed, or more than 3 argument is passed, trigger inFault.
             if (setTNP && retStr.length == 3) {
                 retVal[2] = penaltyVerify(retStr[2]);
@@ -358,10 +364,18 @@ public class SplashParser {
 
         // Check to see if assignment is in expected range. If not, trigger invalid error.
         if ((retVal[1] > 7) || (retVal[1] < 0)) {
-            parseError("nullMT");
+            if (!setTNP) {
+                parseError("nullMT");
+            } else {
+                parseError("nullT");
+            }
         }
         else if ((retVal[0] > 7) || (retVal[0] < 0)) {
-            parseError("nullMT");
+            if (!setTNP) {
+                parseError("nullMT");
+            } else {
+                parseError("nullT");
+            }
         }
 
         return retVal;
@@ -370,13 +384,16 @@ public class SplashParser {
     // Handles line of integer for MP.
     private int[] lineProcessor(String target) {
         // Adjust the line such that it is in predictable pattern format of emptyspace-number cycle.
-        String tempStr = blankCanner(target);        
+        String tempStr = blankCanner(target);
         String[] retStr = tempStr.split(" ");
         int[] retVal = new int[SIZEMAX];
 
         // If there are more or less than 8 entries, crash.
-        if (retStr.length != SIZEMAX) {
+        if (retStr.length < SIZEMAX) {
             parseError("intCrash");
+        }
+        else if(retStr.length > SIZEMAX){
+          parseError("inFault");
         }
 
         for (byte i=0; i < SIZEMAX; i++) {
@@ -454,13 +471,19 @@ public class SplashParser {
                   System.out.println("Input tried to assign task to the non-existent machine or non-existent Task");
                   SplashOutput.printError(3);
               }
+              else if (erCode.contentEquals("nullT"))
+              {
+                System.out.println("invalid task");
+                  System.out.println("Input tried to assign task to non-existent Task");
+                  SplashOutput.printError(5);
+              }
               else if (erCode.contentEquals("nullP"))
               {
                   System.out.println("Invalid Penalty Error");
                   System.out.println("Input is neither natural number or 0.");
                   SplashOutput.printError(6);
-              } 
-              else if (erCode.contentEquals("inFault")) 
+              }
+              else if (erCode.contentEquals("inFault"))
               {
                   System.out.println("Error while parsing input file");
                   SplashOutput.printError(1);
