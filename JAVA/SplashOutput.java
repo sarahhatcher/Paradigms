@@ -4,14 +4,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class SplashOutput {
-
+	
    public static void printFile(String message) {
 	   BufferedWriter bufferWriter = null;
 	      try {
 		 String output = message;
 	         //Specify the file name and path here
-		 File file = new File(Driver.outputFile);
-
+		 File file = new File(Scheduler.outputFile);
 		  if (!file.exists()) {
 		     file.createNewFile();
 		  }
@@ -34,7 +33,6 @@ public class SplashOutput {
 		       System.out.println("Error in closing the BufferedWriter"+ex);
 		    }
 		}
-
    }
    public static void printError(int output) {
 	  int erroroutput = output;
@@ -66,11 +64,11 @@ public class SplashOutput {
 		  break;
       //Error thrown in in the too near input there is a task in the three tuples that is outside the set of tasks
 	  case 5:
-		  errorMessage = "invalid task description";
+		  errorMessage = "invalid task";
 		  printFile(errorMessage);
 		  System.exit(0);
 		  break;
-	 //Error thrown if in the Machine Penalty of in the too-near task penalty that is not in the natural numbers
+	 //Error thrown if in the Machine Penalty or the too-near task penalty that is not in the natural numbers
 	  case 6:
 		  errorMessage = "invalid penalty";
 		  printFile(errorMessage);
