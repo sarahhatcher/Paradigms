@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.*;
 
 // v0.4: Output matrix is now masterGrid[][][].
 //       Error handling has been altered: Collision will be no longer processed during parsing.
@@ -80,9 +79,6 @@ public class SplashParser {
 
 	    //Create new fileReader with INPUTNAME
         ////Create new BufferedReader
-            if (!inputName.endsWith(".txt")) {
-                inputName = inputName + ".txt";
-            }
             fr = new FileReader(inputName);
             br = new BufferedReader(fr);
 
@@ -318,8 +314,9 @@ public class SplashParser {
         int[] retVal = new int[retStr.length];
 
         // Check if any extranous whitespace has been introduced.
+        // Catching null text has been moved to general error catching.
         for (byte i=0; i < retStr.length; i++) {
-            if (retStr[i].indexOf("#") != -1) {
+            if ((retStr[i].indexOf("#") != -1) || retStr[i].length() == 0) {
                 parseError("inFault");
             } else if (retStr[i].length() > 1 && i < 3) {
                 parseError("inFault");
