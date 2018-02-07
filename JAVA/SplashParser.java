@@ -1,12 +1,49 @@
 import java.io.*;
-import java.util.*;
+
+// v0.4: Output matrix is now masterGrid[][][].
+//       Error handling has been altered: Collision will be no longer processed during parsing.
+//       FPA is no longer pre-calculated. It will be assigned normally. ASSIGN constant is kept for the purpose of detecting collision.
+// v0.5: Empty space parsing is now flexible, it will process correctly regardless of number of empty space between.
+//       WARNING: Above solution handles this in O(mn), hopefully this algorithm is fast enough.
+//       Bracket exception cases from 0.4v has been solved, now it will correctly recognize if brackets are correctly set.
+//       Pair processor now tests if number of argument being passed is correct for currently processing sections.
+// v0.9a:
+//      Duplicate entry detection has been reverted.
+//      Flag text processor now checks if last line was empty line.
+//      FPA and FM will no longer simply assign (Task,Task) pair input as though it is a valid input.
+//      Actual error processor for infault has been added
+//      Line Processor no longer crashes for extra row during MP
+// v0.9b:
+//      Duplicate flag name detection now works again.
+//      More error dialogues
+//      Separates invalid inputs on machine and task.
+// v0.9c:
+//      Fixes using applying multi-letter tasks or multi-letter machines.
+// v1.0:
+//      Should handle, at this point, general. First working version.
+// v1.0a
+// TODO:
+//      For some reason, parseError() is directly calling method from uninitialized SplashOutput, this should be fixed.
+//      There has to be at least one newline before flag text is processed.
+//      Remove Duplicate entry inFault.
+// Difference vs. 0.5v:
+//      Multiple white space error correction implemented.
+//      Flag setting order is now strict.
+//      Duplicate Flag is no longer allowed.
+//      Improved file name handling
+//      Strict whitespace policy implemented, excepting EOL whitespace.
+//      Newline previous to flag text is now checked.
+//      FPA / FM (task,task) is no longer allowed.
+//      Error processor now triggers actual infault.
+//      Line processor now handles excess row.
+
 
 public class SplashParser {
 
     private BufferedReader br;
     private FileReader fr;
 
-    private int[][][] masterGrid; // General Matrix, at third place, 0 is used for Logic Matrix, and 1 is used for Task Matrix.
+    public int[][][] masterGrid; // General Matrix, at third place, 0 is used for Logic Matrix, and 1 is used for Task Matrix.
     //Boolean for each step of parsing string
     //Set flag as we parse
     private boolean firstFlag = false; // Checks if name was ever processed by the SplashParser.
@@ -45,9 +82,6 @@ public class SplashParser {
 
 	    //Create new fileReader with INPUTNAME
         ////Create new BufferedReader
-            if (!inputName.endsWith(".txt")) {
-                inputName = inputName + ".txt";
-            }
             fr = new FileReader(inputName);
             br = new BufferedReader(fr);
 
@@ -276,6 +310,9 @@ public class SplashParser {
         flagCounter++;
     }
 
+    // Ask if whitespace counts as possible task input.
+    // 
+
     // This function processes string in form of "(machine,task)", "(task,task)", or "(machine,task,penalty)" and processes into an array for data structure.
     private int[] pairProcessor(String tempStr) {
         // Counts all whitespaces, then split based on comma.
@@ -283,30 +320,41 @@ public class SplashParser {
         int[] retVal = new int[retStr.length];
 
         // Check if any extranous whitespace has been introduced.
+        // Catching null text has been moved to general error catching.
+        
+        // This should be discontinued.
         for (byte i=0; i < retStr.length; i++) {
             if (retStr[i].indexOf("#") != -1) {
                 parseError("inFault");
-            } 
+            } else if (retStr[i].length() > 1 && i < 3) {
+                if (!setTNP) {
+                    parseError("nullMT");
+                } else {
+                    parseError("nullT");
+                }
+            }
         }
 
         try {
             // Try to parse the machine (int) input.
             retVal[0] = Integer.parseInt(retStr[0]) - 1;
+            if (setTNT || setTNP) {
+                parseError("inFault");
+            }
         } catch (NumberFormatException e) {
             // If it fails, it must be task or invalid, process it as though it is task
             retVal[0] = (int) retStr[0].charAt(0);
+            retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
             // Just checks if FPA or FM is set at the moment... That should not take two task as input.
-            if (!setFPA && !setFM) {
-                retVal[0] = retVal[0] + ASCII_CAP_CHAR_FIX;
-            }
+            
         }
 
         // Second input is always task.
         retVal[1] = (int) retStr[1].charAt(0);
         retVal[1] = retVal[1] + ASCII_CAP_CHAR_FIX;
-        if (retStr.length > 2) {
+        if (retStr.length > 2 || setTNP) {
             // If there are more than three variable discovered, it is TNP, process penalty. If program tries to process more than two entry when TNP is not being processed, or more than 3 argument is passed, trigger inFault.
-            if (setTNP = true && retStr.length == 3) {
+            if (setTNP && retStr.length == 3) {
                 retVal[2] = penaltyVerify(retStr[2]);
             } else {
                 parseError("inFault");
@@ -315,10 +363,18 @@ public class SplashParser {
 
         // Check to see if assignment is in expected range. If not, trigger invalid error.
         if ((retVal[1] > 7) || (retVal[1] < 0)) {
-            parseError("nullMT");
+            if (!setTNP) {
+                parseError("nullMT");
+            } else {
+                parseError("nullT");
+            }
         }
         else if ((retVal[0] > 7) || (retVal[0] < 0)) {
-            parseError("nullMT");
+            if (!setTNP) {
+                parseError("nullMT");
+            } else {
+                parseError("nullT");
+            }
         }
 
         return retVal;
@@ -385,13 +441,15 @@ public class SplashParser {
 
     // Catch no name error here by ordering of errors and if statements checking setName status when later error triggers.
     private void parseError(String erCode) {
+
+                systemStatePrinter();
               if (erCode.contentEquals("fpa"))
               {
                   System.out.println("Partial Assignment Error");
                   System.out.println("Assignment requested is impossible due to duplicated machine or task assignment.");
                   SplashOutput.printError(2);
               }
-              if (erCode.contentEquals("mpCrash"))
+              if (erCode.contentEquals("intCrash"))
               {
                   System.out.println("Machine Penalty Error");
                   System.out.println("Provided data either falls short or exceeds required data input.");
@@ -403,31 +461,34 @@ public class SplashParser {
                   System.out.println("Forced assignment collides with forbidden machine!");
                   SplashOutput.printError(7);
               }
-              else if (erCode.contentEquals("nullM"))
+              else if (erCode.contentEquals("nullMT"))
               {
-                  System.out.println("Invalid Machine Error");
-                  System.out.println("Input tried to assign task to the non-existent machine.");
+                  System.out.println("invalid machine/task");
+                  System.out.println("Input tried to assign task to the non-existent machine or non-existent Task");
                   SplashOutput.printError(3);
               }
               else if (erCode.contentEquals("nullT"))
               {
-                  System.out.println("Invalid Task Error");
-                  System.out.println("Input tried to assign non-existent task to the machine");
-                  SplashOutput.printError(3);
+                System.out.println("invalid task");
+                  System.out.println("Input tried to assign task to non-existent Task");
+                  SplashOutput.printError(5);
               }
               else if (erCode.contentEquals("nullP"))
               {
                   System.out.println("Invalid Penalty Error");
                   System.out.println("Input is neither natural number or 0.");
                   SplashOutput.printError(6);
-              } else if (erCode.contentEquals("inFault")) {
+              } 
+              else if (erCode.contentEquals("inFault")) 
+              {
                   System.out.println("Error while parsing input file");
+                  SplashOutput.printError(1);
               }
               else
               {
                   System.out.println("Unknown error has occured during input parsing. Aborting.");
               }
-              systemStatePrinter();
+
               System.exit(0);
           }
 
