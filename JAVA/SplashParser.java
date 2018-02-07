@@ -321,7 +321,9 @@ public class SplashParser {
         for (byte i=0; i < retStr.length; i++) {
             if (retStr[i].indexOf("#") != -1) {
                 parseError("inFault");
-            } 
+            } else if (retStr[i].length() > 1 && i < 3) {
+                parseError("inFault");
+            }
         }
 
         try {
