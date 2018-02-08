@@ -23,9 +23,7 @@ import java.io.*;
 //      Should handle, at this point, general. First working version.
 // v1.0a
 // TODO:
-//      For some reason, parseError() is directly calling method from uninitialized SplashOutput, this should be fixed.
-//      There has to be at least one newline before flag text is processed.
-//      Remove Duplicate entry inFault.
+//  
 // Difference vs. 0.5v:
 //      Multiple white space error correction implemented.
 //      Flag setting order is now strict.
@@ -87,6 +85,7 @@ public class SplashParser {
 
 	    //tempStr is string being processed
             String tempStr = br.readLine();
+            
 	    //Verify will try to pick up the first letter of given string in first while loop
             byte verify;
 	    //Current data structures before matching to Richards output
