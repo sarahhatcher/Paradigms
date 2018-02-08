@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class splashSearch{
+public class SplashSearch{
   /*set up vars.
   * create the master node
   * set forced assignment nodes
@@ -36,7 +36,7 @@ public class splashSearch{
   /*constructor
   * pntArray = penalty too near array
   */
-  public splashSearch(int[][][] pntArray){
+  public SplashSearch(int[][][] pntArray){
     searchArray = pntArray;
 
     //Extract forced assignments
@@ -86,24 +86,28 @@ public class splashSearch{
 
       }
       //Should always now be in a leaf
-
       updateBestSoln();
       backTrack();
     }while(currentNode.parent != null && currentNode.children.size() != 0);							//Repeat until node is master again
 
     if(lowestPenalty == -1){
-     SplashOutput.printError(7);
+      SplashOutput.printError(7);
     }
+
     char printTask;
     //Result
-		String solutionText= "Solution";
+    String solutionText = "Solution ";
 		for(int i=0 ; i < bestAssignment.size(); i++){
-      printTask = (char)('A' + bestAssignment.get(i) %26);
-      solutionText+=" " + printTask + " ";
+      printTask = (char)('A' + bestAssignment.get(i) % 26);
+      solutionText += " " + printTask + " ";
     }
-    solutionText+= "; Quality: " + lowestPenalty;
-    SplashOutput.printFile(solutionText);
 
+		solutionText += " 0Quality: " + lowestPenalty;
+
+
+
+
+    System.out.println(solutionText);
   }
 
 
@@ -133,21 +137,63 @@ public class splashSearch{
     if(currentNode.active){								 //Check if children have never been created
 
         //Optional: the next machine to assign to (implement algorithm to pick best next machine)
-
-        int nextMachine = remainingMachines.get(0);
+        int nextMachine = remainingMachines.get(0);				//Find next machine to be assigned
+        int lastMachine;					
+        int leftMachine = 0;									//Records index of adjacent machines
+        int rightMachine = 0;
+        int leftTask;
+        int rightTask;
+        int penalty = 0;
         for(int task=0; task < remainingTasks.size(); task++)		//For each unassigned task
         {
-          int nextTask = remainingTasks.get(task);
+          int nextTask = remainingTasks.get(task);				//Find task to be assigned
           //Create a new node which child to 'currentNode'
+          
+          //Check if assignment pair is prohibited (penalty table has -1)
           int i = searchArray[nextMachine][nextTask][0];
           if(i!=-1){
-            // need method for TNT and TNP
+            //If valid paring, find left and right machines to check for penalties
+            if(nextMachine != 0){
+              leftMachine = nextMachine - 1;						
+            }
+            else {
+              leftMachine = 7;
+            }
+            
+            if(nextMachine != 7){
+            	rightMachine = nextMachine + 1;
+            }
+            else{
+            	rightMachine = 0;
+            }
 
+            leftTask = currentPath.get(leftMachine);			//Get task assigned to the machine on the left
+            rightTask = currentPath.get(rightMachine);
+
+            //If the left task has been assigned, find the penalty (TNT table has !=-1) or restriction (TNT table has -1)
+            if(leftTask != -1){
+                if(searchArray[leftTask][nextTask][1]==-1)
+                {
+                	continue;
+                }
+                penalty += searchArray[leftTask][nextTask][1];
+            }
+            
+          //If the right task has been assigned, find the penalty (TNT table !=-1) or restriction (TNT table == -1)
+            if(rightTask != -1){
+                if(searchArray[nextTask][rightTask][1]==-1)
+                {
+                	continue;
+                }
+                penalty += searchArray[nextTask][rightTask][1];
+              }
+
+            //Generate node
+            penalty += searchArray[nextMachine][nextTask][0];
             // make a new Node(parent,mach, task, pen)
-            Node node = new Node(currentNode, nextMachine, remainingTasks.get(task), searchArray[nextMachine][nextTask][0]);
-            //System.out.println("Node machine: " + node.machine + "  Index: " + node.task + "   created"); // error checking line
+            Node node = new Node(currentNode, nextMachine, remainingTasks.get(task), penalty);
+            //System.out.println("Node machine: " + node.machine + "  Index: " + node.task + "   created"); // error checking line 
           }
-
         }
 
         //Close 'currentNode' so it won't make new nodes again, as you have just created all possible children
@@ -168,39 +214,16 @@ public class splashSearch{
   }
 
   public void updateBestSoln(){
-    //TNT/P checking for solutions. Will remove the solution from the running if it
-    //has collisions or the TNP causes it's pen to increase past the lowestPenalty
-    if(remainingMachines.size()==0){
-    for(int taskAtM=0; taskAtM<7;taskAtM++){
-      //check all 8 mach/task pairs
-
-      //if the task at mach i and task on mach i+1 are not TNT add TNP(or 0) to accmulated
-      if(searchArray[currentPath.get(taskAtM)][currentPath.get(taskAtM+1)][1]!=-1){
-        currentNode.accumulatedPenalty+=searchArray[currentPath.get(taskAtM)][currentPath.get(taskAtM+1)][1];
-      }else{
-        return;
-      }
-
-    }
-    //if that task is on mach 8 do this
-    if(searchArray[currentPath.get(7)][currentPath.get(0)][1]!=-1){
-      currentNode.accumulatedPenalty+=searchArray[currentPath.get(7)][currentPath.get(0)][1];
-    }else{
-      //else, leave without updating best assignment
-      return;
-    }
-    }
-
     if(remainingMachines.size()==0){
       if(currentNode.accumulatedPenalty < lowestPenalty || lowestPenalty == -1){
         bestAssignment.clear();
           for(Integer i : currentPath){
             bestAssignment.add(new Integer(i)); //Record new best path
           }
-        lowestPenalty = currentNode.accumulatedPenalty;						//Remember lowest penalty
+          lowestPenalty = currentNode.accumulatedPenalty;						//Remember lowest penalty
+        }
       }
     }
-  }
 
   public void backTrack(){
     while(currentNode.children.size() == 0 && currentNode.parent != null){	//Until there is a child to climb down to
